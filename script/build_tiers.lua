@@ -81,7 +81,7 @@ local function build_tiers(science_packs)
         function get_tier(ingredients)
             local tier = -1
             local packs = get_packs(ingredients)
-            for key, _ in pairs(packs) do
+            for key, _ in packs:iterate() do
                 local current_tier = get_current_tier(key)
                 if current_tier > tier then
                     tier = current_tier
