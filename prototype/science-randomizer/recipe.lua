@@ -1,5 +1,5 @@
 
-local recipes = require("prototype.science-randomizer.prepp.build_recipe")
+local recipes = require("prototype.science-randomizer.prep.build_recipe")
 print("hi")
 
 for key, value in pairs(recipes) do

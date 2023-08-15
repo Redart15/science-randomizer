@@ -1,4 +1,4 @@
-local Set = require("data_structs.Set")
+local Set = require("libs.data_structs.Set")
 
 local function build_graph()
     local add_resever_edges,

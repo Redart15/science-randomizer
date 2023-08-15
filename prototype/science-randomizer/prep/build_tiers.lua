@@ -1,4 +1,4 @@
-local Set = require("data_structs.Set")
+local Set = require("libs.data_structs.Set")
 
 local function build_tiers(science_packs)
     local build_tier1, fill_tiers, transform

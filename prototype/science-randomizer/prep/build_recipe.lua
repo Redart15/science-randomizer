@@ -1,5 +1,6 @@
-local Set = require("data_structs.Set")
-require("random.randomlua")
+local Set = require("libs.data_structs.Set")
+require("libs.random.randomlua")
+local ROOT = "prototype.science-randomizer.prep."
 local seed = 0
 local fluid_multi = 20
 local gen = mwc(seed)
@@ -21,9 +22,9 @@ function type_multy(type)
     return 1
 end
 
-local starts = require("prototype.prep.build_graph")
-local science_sort = require("prototype.prep.get_order")(starts)
-local tiers = require("prototype.prep.build_tiers")(science_sort)
+local starts = require(ROOT .. "build_graph")
+local science_sort = require(ROOT .. "get_order")(starts)
+local tiers = require(ROOT .. "build_tiers")(science_sort)
 
 local recipe_list = {}
 for tier, value in ipairs(tiers) do
