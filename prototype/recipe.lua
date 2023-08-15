@@ -1,3 +1,10 @@
 
-local a = require("script.build_recipe")
-print(a)
+local recipes = require("script.build_recipe")
+print("hi")
+
+for key, value in pairs(recipes) do
+    local recipe = data.raw.recipe[key]
+    recipe.ingredients = value.ingredients
+    recipe.category = value.category
+end
+print("hi")
