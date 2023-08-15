@@ -1,12 +1,22 @@
 local Set = require("data_structs.Set")
 
 local function build_tiers(science_packs)
-    local build_tier0, fill_tiers
+    local build_tier1, fill_tiers, transform
 
-    function build_tier0()
-        local get_t0_items, is_enabled, get_ingredients
+    function transform(boxed)
+        local lset = Set.init()
+        for _, box in ipairs(boxed) do
+            for _, value in ipairs(box) do
+                lset:add(value)
+            end
+        end
+        return lset
+    end
 
-        function get_t0_items()
+    function build_tier1()
+        local get_t1_items, is_enabled, get_ingredients
+
+        function get_t1_items()
             local tier0 = Set.init()
             for _, recipe in pairs(data.raw.recipe) do
                 if is_enabled(recipe) then
@@ -17,6 +27,8 @@ local function build_tiers(science_packs)
                     end
                 end
             end
+            local science = transform(science_packs)
+            tier0 = Set.diff(tier0, science)
             return tier0
         end
 
@@ -43,12 +55,11 @@ local function build_tiers(science_packs)
             return get_ingredients(recipe.normal)
         end
 
-        return get_t0_items()
+        return get_t1_items()
     end
 
-
     function fill_tiers(tiers)
-        local get_items, get_tier, get_packs, get_current_tier
+        local get_items, get_tier, get_packs, get_current_tier, get_unlocks, check_items
 
         function get_items(effects)
             if effects == nil then
@@ -70,17 +81,34 @@ local function build_tiers(science_packs)
         end
 
         function get_current_tier(seach_key)
-            for index, value in ipairs(science_packs) do
-                if value == seach_key then
-                    return index
+            for index, dic in ipairs(science_packs) do
+                for i, value in ipairs(dic) do
+                    if value == seach_key then
+                        return index
+                    end
                 end
             end
             return -1
         end
 
-        function get_tier(ingredients)
+        function get_unlocks(packs, effects)
+            if effects == nil then
+                return packs
+            end
+            local item_set = Set.init()
+            for _, unlock in ipairs(effects) do
+                item_set:add(unlock.recipe)
+            end
+            local science = transform(science_packs)
+            local additional_pack = Set.intsec(item_set, science)
+            local union = Set.union(packs, additional_pack)
+            return union
+        end
+
+        function get_tier(tech)
             local tier = -1
-            local packs = get_packs(ingredients)
+            local packs = get_packs(tech.unit.ingredients)
+            packs = get_unlocks(packs, tech.effects)
             for key, _ in packs:iterate() do
                 local current_tier = get_current_tier(key)
                 if current_tier > tier then
@@ -90,14 +118,33 @@ local function build_tiers(science_packs)
             return tier
         end
 
+        function check_items(recipes)
+            local recipe_list = data.raw.recipe
+            local list        = {}
+            for _, recipe in ipairs(recipes) do
+                local lookup = recipe_list[recipe]
+                -- if lookup == nil then
+                -- end
+                if lookup.results then
+                    for _, item in ipairs(lookup.results) do
+                        table.insert(list, item.name)
+                    end
+                else
+                    table.insert(list, lookup.name)
+                end
+            end
+            return list
+        end
+
         local techs = data.raw.technology
 
         for _, tech in pairs(techs) do
             local items = get_items(tech.effects)
-            local tier = get_tier(tech.unit.ingredients)
+            items = check_items(items)
+            local tier = get_tier(tech)
 
             for _, item in ipairs(items) do
-                tiers[tier+1].items:add(item)
+                tiers[tier + 1].items:add(item)
             end
         end
     end
@@ -111,9 +158,17 @@ local function build_tiers(science_packs)
         }
         last_tier = index
     end
-    tiers[last_tier + 1] = {name = "last_tier", items = Set.init()}
+    -- to catch all the item that would not make it into recipes
+    tiers[last_tier + 1] = { name = {"last_tier"}, items = Set.init() }
     fill_tiers(tiers)
-    tiers[1].items = build_tier0()
+    -- that tier wont be needed and thus be discarded
+    tiers[last_tier + 1] = nil
+    -- tier0 need to queries from recipe, as non of its item are locked by tech
+    tiers[1].items = build_tier1()
+    -- adds all tier1 packs to tier2
+    for _, value in ipairs(science_packs[1]) do
+        tiers[2].items:add(value)
+    end
 
     return tiers
 end
