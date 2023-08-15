@@ -1,7 +1,7 @@
 local Set = {}
 
 function Set.init()
-    local instance = { size = 0, values = {}}
+    local instance = { size = 0, values = {}, order = {}}
     setmetatable(instance, { __index = Set })
     return instance
 end
@@ -21,6 +21,7 @@ function Set:add(value)
     if not self.values[value] then
         self.size = self.size + 1
         self.values[value] = self.size
+        self.order[self.size] = value
         return true
     end
     return false
@@ -28,6 +29,8 @@ end
 
 function Set:remove(value)
     if self.values[value] then
+        local index = self.values[value]
+        self.order[index]  = nil
         self.values[value] = nil
         self.size = self.size - 1
         return true
@@ -46,7 +49,7 @@ end
 function Set.intsec(this, that)
     local intsec = Set.init()
     for value in this:iterate() do
-        if this[value] == that[value] then
+        if this.values[value] and that.values[value] then
             intsec:add(value)
         end
     end
@@ -75,12 +78,24 @@ function Set.diff(this, that)
 end
 
 function Set:iterate()
-    local values = self.values
+    local values = self.order
     local key = nil
     return function()
         key = next(values, key)
-        return key
+        return values[key]
     end
 end
+
+function Set.union(this, that)
+    local union = Set.init()
+    for value in this:iterate() do
+        union:add(value)
+    end
+    for value in that:iterate() do
+        union:add(value)
+    end
+    return union
+end
+
 
 return Set
