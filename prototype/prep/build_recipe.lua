@@ -21,9 +21,9 @@ function type_multy(type)
     return 1
 end
 
-local starts = require("build_graph")
-local science_sort = require("script.get_order")(starts)
-local tiers = require("build_tiers")(science_sort)
+local starts = require("prototype.prep.build_graph")
+local science_sort = require("prototype.prep.get_order")(starts)
+local tiers = require("prototype.prep.build_tiers")(science_sort)
 
 local recipe_list = {}
 for tier, value in ipairs(tiers) do

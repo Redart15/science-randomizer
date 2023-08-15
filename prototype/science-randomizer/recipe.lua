@@ -1,5 +1,5 @@
 
-local recipes = require("script.build_recipe")
+local recipes = require("prototype.prep.build_recipe")
 print("hi")
 
 for key, value in pairs(recipes) do
