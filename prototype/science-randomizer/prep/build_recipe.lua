@@ -36,12 +36,14 @@ local tiers = require(prep .. "build_tiers")(science_sort)
 local recipes = {}
 for tier, value in ipairs(tiers) do
     local size = value.items.size
+
     if max > size then
         max = size
     end
     if min > max then
         min = max
     end
+    -- need to figues a way to adjust for fluids as well
 
 
     local items = value.items.order
