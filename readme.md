@@ -16,3 +16,4 @@ The recipes only use item that can be unlock with thr previous tier of item, thu
 - [ ] add settings
 - [ ] make it compatable with other mods
 - [ ] add option to toggle wood/fish or others, this will require getting mods
+- [ ] add tierless to allow complete randomness(still completable)
