@@ -1,12 +1,19 @@
-local Set = require("libs.data_structs.Set")
+
+
+
 require("libs.random.randomlua")
-local ROOT = "prototype.science-randomizer.prep."
-local seed = 0
+local Set = require("libs.data_structs.Set")
+local prep = "prototype.science-randomizer.prep."
+local config = "Redart-Science-Randomizer-"
+
+local seed = settings.startup[config .. "random-seed"].value
+local min = settings.startup[config .. "min-ingredients"].value
+local max = settings.startup[config .. "max-ingredients"].value
+
 local fluid_multi = 20
 local gen = mwc(seed)
 
 local get_type, type_multy
-
 function get_type(name)
     local fluid = data.raw.fluid
     if fluid[name] then
@@ -22,41 +29,66 @@ function type_multy(type)
     return 1
 end
 
-local starts = require(ROOT .. "build_graph")
-local science_sort = require(ROOT .. "get_order")(starts)
-local tiers = require(ROOT .. "build_tiers")(science_sort)
+local starts = require(prep .. "build_graph")
+local science_sort = require(prep .. "get_order")(starts)
+local tiers = require(prep .. "build_tiers")(science_sort)
 
-local recipe_list = {}
+local recipes = {}
 for tier, value in ipairs(tiers) do
     local size = value.items.size
+    if max > size then
+        max = size
+    end
+    if min > max then
+        min = max
+    end
+
+
     local items = value.items.order
     for _, recipe in ipairs(value.name) do
-        local components_count = gen:random(2, 7) -- caping thr bottom seemsd a bit overkill, min 2 ingredient seems better
-        local recipe_item = Set.init()
-        local n = 0
+        local components_count = gen:random(min, max) -- caping thr bottom seemsd a bit overkill, min 2 ingredient seems better
+        local recipe_set = Set.init()
+        local fluid_count = 0
+        local count = 0
         local category = "crafting"
-        while components_count > n do
+        local recipe_list = {}
+        local fail_safe = 0 --cause I am to lazy seperating fluids out
+        while components_count > count and fail_safe < 10 do
             local index = gen:random(1, size)
-            if recipe_item:add(items[index]) then
-                n = n + 1
-            end
-        end
-        local item_list = recipe_item:to_list()
-        local ingredients = {}
-        -- local amount = gen:random(1, 10)
-        for _, item in ipairs(item_list) do
+            local item = items[index]
             local itype = get_type(item)
-            local amount = gen:random(1, 5) * type_multy(itype)
-            -- local lamount = amount * type_multy(itype)
-            if itype == "fluid" then
-                category = "crafting-with-fluid"
+            if itype ~= "fluid" then
+                if  recipe_set:add(item)  then
+                    table.insert(recipe_list, {name=item, type=itype, amount=-1})
+                    count = count + 1
+                    fail_safe = 0
+                end         
+            elseif fluid_count < 2 then
+                if  recipe_set:add(item)  then
+                    table.insert(recipe_list, {name=item, type=itype, amount=-1})
+                    count = count + 1
+                    fluid_count = fluid_count + 1
+                    fail_safe = 0
+                end
+            else
+                fail_safe = fail_safe + 1
             end
-            table.insert(ingredients, { name=item, amount=amount, type=itype })
         end
-        recipe_list[recipe] = {}
-        recipe_list[recipe].ingredients = ingredients
-        recipe_list[recipe].category = category
+        -- local ingredients = {}
+        for _, item in ipairs(recipe_list) do
+            item.amount = gen:random(1, 5) * type_multy(item.type)   
+        end
+        if fluid_count == 1 then
+            category = "crafting-with-fluid"
+        end
+        if fluid_count == 2 then
+            category = "chemistry"
+        end
+
+        recipes[recipe] = {}
+        recipes[recipe].ingredients = recipe_list
+        recipes[recipe].category = category
     end
 end
 
-return recipe_list
+return recipes
