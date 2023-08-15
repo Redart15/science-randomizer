@@ -12,6 +12,12 @@ Factorio is a real-time strategy game where players must build and manage comple
 Randomizes the recipe for the science packs.
 The recipes only use item that can be unlock with thr previous tier of item, thus making the game always complitable.
 
+## Missing
+- barrels of fluids
+- fish
+- water, steam
+- used uranuim cells(maybe no unlockable)
+
 ## ToDo
 - [ ] add settings
 - [ ] make it compatable with other mods
