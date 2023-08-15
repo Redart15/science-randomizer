@@ -1,1 +1,1 @@
-require("prototype.recipe")
+require("prototype.science-randomizer.recipe")
