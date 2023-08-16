@@ -13,8 +13,8 @@ data:extend(
             name = mod_id .. "min-ingredients",
             setting_type = "startup",
             default_value = 2,
-            minimum_value = 0,
-            maximum_value = 30,
+            minimum_value = 1,
+            maximum_value = 10,
             order = "aaab"
         },
         {
@@ -23,7 +23,7 @@ data:extend(
             setting_type = "startup",
             default_value = 7,
             minimum_value = 2,
-            maximum_value = 30,
+            maximum_value = 10,
             order = "aaac"
         }
     }
