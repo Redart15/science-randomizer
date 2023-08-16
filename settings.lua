@@ -8,23 +8,23 @@ data:extend(
             default_value = 0,
             order = "aaaa"
         },
-        {
-            type = "int-setting",
-            name = mod_id .. "min-ingredients",
-            setting_type = "startup",
-            default_value = 2,
-            minimum_value = 1,
-            maximum_value = 10,
-            order = "aaab"
-        },
-        {
-            type = "int-setting",
-            name = mod_id .. "max-ingredients",
-            setting_type = "startup",
-            default_value = 7,
-            minimum_value = 2,
-            maximum_value = 10,
-            order = "aaac"
-        }
+        -- {
+        --     type = "int-setting",
+        --     name = mod_id .. "min-ingredients",
+        --     setting_type = "startup",
+        --     default_value = 2,
+        --     minimum_value = 1,
+        --     maximum_value = 10,
+        --     order = "aaab"
+        -- },
+        -- {
+        --     type = "int-setting",
+        --     name = mod_id .. "max-ingredients",
+        --     setting_type = "startup",
+        --     default_value = 7,
+        --     minimum_value = 2,
+        --     maximum_value = 10,
+        --     order = "aaac"
+        -- }
     }
 )
