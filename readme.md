@@ -12,14 +12,17 @@ Factorio is a real-time strategy game where players must build and manage comple
 Randomizes the recipe for the science packs.
 The recipes only use item that can be unlock with thr previous tier of item, thus making the game always complitable.
 
-## Missing
-- barrels of fluids
-- fish
-- water, steam
-- used uranuim cells(maybe no unlockable)
+
+## How it works
+The mod calc order of packs(right now its static), than running through all tech its query its tier and the recipes and add
+the item those unlock to its resperctve tier. Finaly it picks 2-5 random item for each tier and constructs the recipes.
+
+## Structure
+- Libs: contains libiaries used in the mod
+- prototype/science-randomnizer: contains the actual modding files
 
 ## ToDo
-- [ ] add settings
 - [ ] make it compatable with other mods
 - [ ] add option to toggle wood/fish or others, this will require getting mods
 - [ ] add tierless to allow complete randomness(still completable)
+- [ ] add missing items such as barrels, fish, water and steam
