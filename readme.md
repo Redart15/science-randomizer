@@ -1,4 +1,4 @@
-# Science Randomizer Warfare
+# Science Randomizer
 [![made-with-python](https://img.shields.io/badge/Made%20with-Lua-13008F.svg)](https://www.lua.org/)
  [![GitHub release](https://img.shields.io/github/release/Redart15/science-randomizer)](https://GitHub.com/Redart15/science-randomizer/releases/)\
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Redart15/science-randomizer/graphs/commit-activity)
