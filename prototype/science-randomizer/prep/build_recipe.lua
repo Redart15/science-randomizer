@@ -4,12 +4,6 @@ local prep = "prototype.science-randomizer.prep."
 local config = "Redart-Science-Randomizer-"
 local seed = settings.startup[config .. "random-seed"].value
 local fluid_multi = 20
-
--- if seed == -1 then
---     local temp = 0x80000000
---     seed = math.random(0, temp - 1)
--- end
-
 local gen = mwc(seed)
 
 local get_type, type_multy
