@@ -21,10 +21,6 @@ local function build_tiers(science_packs)
             for _, recipe in pairs(data.raw.recipe) do
                 if is_enabled(recipe) then
                     tier0:add(recipe.name)
-                    local ingredients = get_ingredients(recipe)
-                    for _, ingredient in ipairs(ingredients) do
-                        tier0:add(ingredient[1])
-                    end
                 end
             end
             local science = transform(science_packs)

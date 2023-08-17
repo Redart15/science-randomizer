@@ -1,16 +1,15 @@
-
-
-
 require("libs.random.randomlua")
 local Set = require("libs.data_structs.Set")
 local prep = "prototype.science-randomizer.prep."
 local config = "Redart-Science-Randomizer-"
-
 local seed = settings.startup[config .. "random-seed"].value
-local min = settings.startup[config .. "min-ingredients"].value
-local max = settings.startup[config .. "max-ingredients"].value
-
 local fluid_multi = 20
+
+-- if seed == -1 then
+--     local temp = 0x80000000
+--     seed = math.random(0, temp - 1)
+-- end
+
 local gen = mwc(seed)
 
 local get_type, type_multy
@@ -36,19 +35,10 @@ local tiers = require(prep .. "build_tiers")(science_sort)
 local recipes = {}
 for tier, value in ipairs(tiers) do
     local size = value.items.size
-
-    if max > size then
-        max = size
-    end
-    if min > max then
-        min = max
-    end
     -- need to figues a way to adjust for fluids as well
-
-
     local items = value.items.order
     for _, recipe in ipairs(value.name) do
-        local components_count = gen:random(min, max) -- caping thr bottom seemsd a bit overkill, min 2 ingredient seems better
+        local components_count = gen:random(2, 5) -- caping thr bottom seemsd a bit overkill, min 2 ingredient seems better
         local recipe_set = Set.init()
         local fluid_count = 0
         local count = 0
@@ -72,9 +62,8 @@ for tier, value in ipairs(tiers) do
                     fluid_count = fluid_count + 1
                     fail_safe = 0
                 end
-            else
-                fail_safe = fail_safe + 1
             end
+            fail_safe = fail_safe + 1
         end
         -- local ingredients = {}
         for _, item in ipairs(recipe_list) do
