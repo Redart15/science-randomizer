@@ -1,5 +1,4 @@
-return function(starts)
-    return {
+return {
         {
             "automation-science-pack"
         },
@@ -17,4 +16,3 @@ return function(starts)
             "utility-science-pack"
         },
     }
-end

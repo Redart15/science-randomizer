@@ -22,8 +22,8 @@ function type_multy(type)
     return 1
 end
 
-local starts = require(prep .. "build_graph")
-local science_sort = require(prep .. "get_order")(starts)
+-- local starts = require(prep .. "build_graph")
+local science_sort = require(prep .. "get_order")
 local tiers = require(prep .. "build_tiers")(science_sort)
 
 local recipes = {}
@@ -39,6 +39,7 @@ for tier, value in ipairs(tiers) do
         local category = "crafting"
         local recipe_list = {}
         local fail_safe = 0 --cause I am to lazy seperating fluids out
+        local multiplier_result = gen:random(3, 10)
         while components_count > count and fail_safe < 10 do
             local index = gen:random(1, size)
             local item = items[index]
@@ -61,7 +62,7 @@ for tier, value in ipairs(tiers) do
         end
         -- local ingredients = {}
         for _, item in ipairs(recipe_list) do
-            item.amount = gen:random(1, 5) * type_multy(item.type)   
+            item.amount = gen:random(1, math.floor(multiplier_result/2)) * type_multy(item.type)
         end
         if fluid_count == 1 then
             category = "crafting-with-fluid"
@@ -73,6 +74,7 @@ for tier, value in ipairs(tiers) do
         recipes[recipe] = {}
         recipes[recipe].ingredients = recipe_list
         recipes[recipe].category = category
+        recipes[recipe].result_count_multiplier = multiplier_result
     end
 end
 
