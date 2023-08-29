@@ -1,56 +1,49 @@
 local Set = {}
 
 function Set.init()
-    local instance = { size = 0, values = {}, order = {}}
+    local instance = { size = 0, values = {}}
     setmetatable(instance, { __index = Set })
+    function instance:isSet()
+        return true
+    end
     return instance
 end
 
-function Set.from_list(list)
+function Set.from_table(list)
     local new_instance = Set.init()
-    for _, value in ipairs(list) do
-        new_instance:add(value)
+    for index, key in ipairs(list) do
+        new_instance:add(key, index)
     end
     return new_instance
 end
 
-function Set:add(value)
-    if value == nil then
+function Set:add(key, value)
+    if key == nil then
         return false
     end
-    if not self.values[value] then
+    if not self.values[key] then
         self.size = self.size + 1
-        self.values[value] = self.size
-        self.order[self.size] = value
+        self.values[key] = value
         return true
     end
     return false
 end
 
-function Set:remove(value)
-    if self.values[value] then
-        local index = self.values[value]
-        self.order[index]  = nil
-        self.values[value] = nil
+
+function Set:remove(key)
+    if self.values[key] then
+        self.values[key] = nil
         self.size = self.size - 1
         return true
     end
     return false
 end
 
-function Set:to_list()
-    local list = {}
-    for k in self:iterate() do
-        table.insert(list, k)
-    end
-    return list
-end
-
 function Set.intsec(this, that)
     local intsec = Set.init()
-    for value in this:iterate() do
-        if this.values[value] and that.values[value] then
-            intsec:add(value)
+    for key in this:iterate() do
+        if this.values[key] and that.values[key] then
+            intsec:add(key, this.values[key])
         end
     end
     return intsec
@@ -68,34 +61,41 @@ function Set.diff(this, that)
     if that == nil then
         return this
     end
-    for value in this:iterate() do
-        diff:add(value)
+    for key, value in pairs(this.values) do
+        diff:add(key, value)
     end
-    for value in that:iterate() do
-        diff:remove(value)
+    for key, value in pairs(that.values) do
+        diff:remove(key, value)
     end
     return diff
 end
 
 function Set:iterate()
-    local values = self.order
+    local values = self.values
     local key = nil
     return function()
         key = next(values, key)
-        return values[key]
+        return key
     end
 end
 
 function Set.union(this, that)
     local union = Set.init()
-    for value in this:iterate() do
-        union:add(value)
+    for key, value in pairs(this.values) do
+        union:add(key, value)
     end
-    for value in that:iterate() do
-        union:add(value)
+    for key, value in pairs(that.values) do
+        union:add(key, value)
     end
     return union
 end
 
+function Set:to_table()
+    local list = {}
+    for _, value in pairs(self.values) do
+        table.insert(list, value)
+    end
+    return list
+end
 
 return Set
