@@ -9,7 +9,7 @@ function Set.init()
     return instance
 end
 
-function Set.from_table(list)
+function Set.from_list(list)
     local new_instance = Set.init()
     for index, key in ipairs(list) do
         new_instance:add(key, index)
@@ -18,7 +18,7 @@ function Set.from_table(list)
 end
 
 function Set:add(key, value)
-    if key == nil then
+    if key == nil or value == nil then
         return false
     end
     if not self.values[key] then
@@ -90,7 +90,7 @@ function Set.union(this, that)
     return union
 end
 
-function Set:to_table()
+function Set:to_list()
     local list = {}
     for _, value in pairs(self.values) do
         table.insert(list, value)
