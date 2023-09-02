@@ -1,5 +1,4 @@
 local recipes = require("prep.tier_to_prototypes")
-local set = require("libs.data_structs.Set")
 local dataRecipe = data.raw.recipe
 local calc_cost, calc_crafting_category
 
