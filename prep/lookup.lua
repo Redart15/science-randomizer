@@ -49,6 +49,18 @@ function lookup_table:isScience(input)
     return false
 end
 
+function lookup_table:tier_name(input)
+    if input == nil or input < 0 or input > self.max_tier then
+        return ""
+    end
+    for key, tier in pairs(self.science) do
+        if input == tier then
+            return key
+        end
+    end
+    return ""
+end
+
 lookup_table["science"] = {
     ["automation-science-pack"] = 1,
     ["logistic-science-pack"] = 2,
