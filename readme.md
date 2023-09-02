@@ -14,14 +14,12 @@ The recipes only use item that can be unlock with thr previous tier of item, thu
 
 ## How it works
 The mod calc order of packs(right now its static), than running through all tech its query its tier and the recipes and add
-the item those unlock to its resperctve tier. Finaly it picks 2-5 random item for each tier and constructs the recipes.
+the item those unlock to its resperctve tier. Finaly it picks 1-5 random item for each tier and constructs the recipes.
 
 ## Structure
-- Libs: contains libiaries used in the mod
-- prototype/science-randomnizer: contains the actual modding files
+- libs: contains libiaries used in the mod
+- prep: build the prototype lists
+- prototype/recipe: contains the creation of the prototype
 
 ## ToDo
-- [ ] make it compatable with other mods
-- [ ] add option to toggle wood/fish or others, this will require getting mods
-- [ ] add tierless to allow complete randomness(still completable)
-- [ ] add missing items such as barrels, fish, water and steam
+- [] import and export science recipes
