@@ -81,12 +81,13 @@ end
 
 for _, recipe in ipairs(recipes.item_list) do
     local pack = dataRecipe[recipe.name]
+    local packCost = calc_cost(recipe.name)
     pack.ingredients = recipe.recipe:to_list()
     pack.category = calc_crafting_category(recipe.fluidCount)
     local count
     if recipes.settings.isBalanced == true then
         local cost = calc_costs(recipe.recipe.values)
-        count = math.ceil(cost / recipe.cost)
+        count = math.ceil(cost / packCost)
     end
     pack.results = build_results(pack, recipe, count)
     print("hi")

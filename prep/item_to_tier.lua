@@ -4,10 +4,8 @@ local tiered_item_list = {}
 
 for i = 1, lookup.max_tier do
     local name = lookup:tier_name(i)
-    local cost = lookup["costs"][name]
     tiered_item_list[i] = {
         name = name,
-        cost = cost,
         ingredients = {
             ["science"] = {},
             ["raw"] = {},
