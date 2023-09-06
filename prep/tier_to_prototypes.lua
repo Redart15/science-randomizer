@@ -2,6 +2,7 @@ require("libs.random.randomlua")
 local tier_list = require("prep.item_to_tier")
 local set = require("libs.data_structs.Set")
 local config = "Redart-Science-Randomizer-"
+local base64 = require("libs.base64.base64")
 local fluidMuliplier = 20
 
 local return_list = {
@@ -15,7 +16,6 @@ generate_prototype,
 populate,
 get_type_table,
 add_item,
-verify, -- not implemented yet
 decode -- not implemented yet
 
 function read_settings()
@@ -27,19 +27,24 @@ function read_settings()
     temp.allowGrown = settings.startup[config .. "allow-grown"].value
     temp.isBalanced = settings.startup[config .. "balanced"].value
     temp.inTier = settings.startup[config .. "in-tier"].value
+    temp.startup = settings.startup[config .. "string-setting"]
     return temp
 end
 
 function get_prototypes()
-    local set_recipe = settings.startup[config .. "string-setting"]
-    if set_recipe == nil or not verify(set_recipe) then
-        local setting = read_settings()
-        return_list.settings = setting
-        local gen = mwc(setting.seed)
+    return_list.settings = read_settings()
+    local setting = return_list.settings
+    local gen = mwc(setting.seed)
+    if setting.startup == nil or setting.startup == "" then
         return generate_prototype(setting, gen)
     end
-    return decode(set_recipe)
+    decode(setting.startup)
 end
+
+function decode(string)
+    local decoded = base64.dec(string)
+end
+
 
 function populate(setting)
     local temp = { "item", }
@@ -100,7 +105,6 @@ function add_item(current_pack, item_list, type_table, generate)
 end
 
 function generate_prototype(setting, generate)
-    local tierkk = tier_list
     local settings_type_table = populate(setting)
     for tier = 1, #tier_list do
         tier_list[tier].recipe = set.init()
@@ -118,7 +122,6 @@ function generate_prototype(setting, generate)
             add_item(tier_list[tier], item_lists, type_table, generate)
         end
     end
-    print("hi")
 end
 
 get_prototypes()
