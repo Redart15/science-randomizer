@@ -1,4 +1,4 @@
-local base64
+local base64 = {}
 -- character table string
 local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
