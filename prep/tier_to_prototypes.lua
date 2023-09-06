@@ -1,5 +1,5 @@
+require("libs.random.randomlua")
 local tier_list = require("prep.item_to_tier")
-local rand = require("libs.random.randomlua")
 local set = require("libs.data_structs.Set")
 local config = "Redart-Science-Randomizer-"
 local fluidMuliplier = 20
