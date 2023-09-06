@@ -13,7 +13,8 @@ local function check(input, lookup)
 end
 
 function lookup_table:get_type(item)
-    if self:isFluid(item) then
+    local data = data.raw.fluid
+    if self:isFluid(item) or data[item] then
         return "fluid"
     end
     if self:isGrown(item) then
@@ -32,7 +33,7 @@ function lookup_table:isBase(input)
     if input == nil or self.base == nil then
         return false
     end
-    for key, value in pairs(self.base) do
+    for key, _ in pairs(self.base) do
         if input == key then
             return true
         end
