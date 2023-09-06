@@ -12,6 +12,21 @@ local function check(input, lookup)
     return false
 end
 
+function lookup_table:get_type(item)
+    if self:isFluid(item) then
+        return "fluid"
+    end
+    if self:isGrown(item) then
+        return "grown"
+    end
+    if self:isRaw(item) then
+        return "raw"
+    end
+    if self:isScience(item) then
+        return "science"
+    end
+    return "item"
+end
 
 function lookup_table:isBase(input)
     if input == nil or self.base == nil then
