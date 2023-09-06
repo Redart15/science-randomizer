@@ -86,7 +86,7 @@ function add_item(current_pack, item_list, type_table, generate)
             local item_index = generate:random(1, #item_list[ttype])
             for i = 1, #item_list[ttype] do
                 local item = item_list[ttype][item_index]
-                if current_pack.recipe:add(item.name, item) then
+                if current_pack.ingredients:add(item.name, item) then
                     item.amount = generate:random(1, 10)
                     item.type = "item"
                     if ttype == "fluid" then
@@ -107,7 +107,7 @@ end
 function generate_prototype(setting, generate)
     local settings_type_table = populate(setting)
     for tier = 1, #tier_list do
-        tier_list[tier].recipe = set.init()
+        tier_list[tier].ingredients = set.init()
         tier_list[tier].fluidCount = 0
         local max_tier = tier
         local min_tier = tier
@@ -115,12 +115,13 @@ function generate_prototype(setting, generate)
             min_tier = 1
         end
         local ingredientCount = generate:random(1, 5)
-        while tier_list[tier].recipe.size < ingredientCount do
+        while tier_list[tier].ingredients.size < ingredientCount do
             local current_tier = generate:random(min_tier, max_tier)
-            local item_lists = tier_list[current_tier].ingredients
+            local item_lists = tier_list[current_tier].items
             local type_table = get_type_table(settings_type_table, item_lists, tier_list[tier].fluidCount)
             add_item(tier_list[tier], item_lists, type_table, generate)
         end
+        tier_list[tier].ingredients = tier_list[tier].ingredients:to_list()
     end
 end
 

@@ -6,7 +6,7 @@ for i = 1, lookup.max_tier do
     local name = lookup:tier_name(i)
     tiered_item_list[i] = {
         name = name,
-        ingredients = {
+        items = {
             ["science"] = {},
             ["raw"] = {},
             ["grown"] = {},
@@ -21,12 +21,12 @@ for _, value in ipairs(item_list) do
     value.tier = nil
     if tier <= lookup.max_tier then
         local type = lookup:get_type(value.name)
-        table.insert(tiered_item_list[tier].ingredients[type], value)
+        table.insert(tiered_item_list[tier].items[type], value)
     end
 end
 
 for _, tier in pairs(tiered_item_list) do
-    for _, lists in pairs(tier.ingredients) do
+    for _, lists in pairs(tier.items) do
         table.sort(
             lists,
             function(this, that)
