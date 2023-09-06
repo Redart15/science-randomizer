@@ -1,3 +1,25 @@
----------------------------------------------------------------------------------------------------.
-
----------------------------------------------------------------------------------------------------.
+---------------------------------------------------------------------------------------------------
+Version: 0.0.4
+Date: 06.09.2023
+  Bugfixes:
+    - moved code from data stage to data-updates, allowing it to utilize all new items
+    - checks now data.raw explizitly for fluids
+  Debug:
+    - moved commonly used function to utils
+---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 03.09.2023
+  Major Features:
+    - Adjusted recipe result_count to reflect the recipe cost
+    - Added option to toggle item types off
+  Optimizations:
+    - Cache item cost to increase performance
+  Debug:
+    - Refactored most the code, to make it easier to maintain and expand
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 06.09.2023
+  Info:
+    - initial Release
+  Major Features:
+    - Randomize item recipe for science packs in such a way, that the game is compitable
