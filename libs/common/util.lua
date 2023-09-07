@@ -61,4 +61,11 @@ function util.get_results(recipe)
     return fix_up({ recipe.result })
 end
 
+function util.get_category(recipe)
+    if recipe.category == nil then
+        return "crafting"
+    end
+    return recipe.category
+end
+
 return util
