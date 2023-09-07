@@ -1,6 +1,6 @@
-local recipes = require("prep.tech_to_recipe")
-local set = require("libs.data_structs.Set")
-local lookup = require("prep.lookup")
+local recipes = require("noneed.tech_to_recipe")
+local set = require("libs.modss.Set")
+local lookup = require("libs.common.lookup")
 local util = require("libs.factorio.util")
 
 local add_ingredients,
@@ -37,9 +37,6 @@ function add_ingredients(collector, recipe, tier)
     end
 end
 
--- ---comment
--- ---@return table
--- function build_item_list()
 local item_set = set.init()
 for key, tier in pairs(recipes.values) do
     local recipe = data.raw.recipe[key]
@@ -54,9 +51,4 @@ table.sort(
     end
 )
 return item_list
--- end
-
----
--- local item_list = build_item_list()
--- return item_list
 ---

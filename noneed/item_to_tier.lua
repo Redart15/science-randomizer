@@ -1,5 +1,5 @@
-local item_list = require("prep.recipe_to_item")
-local lookup = require("prep.lookup")
+local item_list = require("noneed.recipe_to_item")
+local lookup = require("libs.common.lookup")
 local tiered_item_list = {}
 
 for i = 1, lookup.max_tier do

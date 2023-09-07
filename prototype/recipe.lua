@@ -1,6 +1,6 @@
 local util = require("libs.factorio.util")
 local recipes = require("prep.tier_to_prototypes")
-local lookup = require("prep.lookup")
+local lookup = require("libs.common.lookup")
 local dataRecipe = data.raw.recipe
 local calc_costs,
 calc_crafting_category,
@@ -58,7 +58,7 @@ function calc_costs(ingredients)
     return sum
 end
 
-function build_results(pack, recipe, count)
+function build_results(recipe, count)
     local temp = {}
     local result = {
         name = recipe.name,
@@ -89,7 +89,7 @@ for _, recipe in ipairs(recipes.item_list) do
         local cost = calc_costs(recipe.ingredients)
         count = math.ceil(cost / packCost)
     end
-    pack.results = build_results(pack, recipe, count)
+    pack.results = build_results(recipe, count)
 end
 
 print(data.raw.recipe["automation-science-pack"])

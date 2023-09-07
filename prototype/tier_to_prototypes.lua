@@ -1,6 +1,7 @@
 require("libs.random.randomlua")
-local tier_list = require("prep.item_to_tier")
-local set = require("libs.data_structs.Set")
+-- local tier_list = require("prep.item_to_tier")
+local tier_list = require("prep.calc_prototype")
+local set = require("libs.modss.Set")
 local config = "Redart-Science-Randomizer-"
 local base64 = require("libs.base64.base64")
 local fluidMuliplier = 20
@@ -94,7 +95,7 @@ function add_item(current_pack, item_list, type_table, generate)
                         item.type = "fluid"
                         item.amount = item.amount * fluidMuliplier
                     end
-                    return
+                    return true
                 else
                     item_index = (item_index % #item_list[ttype]) + 1
                 end
@@ -102,6 +103,7 @@ function add_item(current_pack, item_list, type_table, generate)
         end
         table_index = (table_index % #type_table) + 1
     end
+    return false
 end
 
 function generate_prototype(setting, generate)
@@ -119,7 +121,9 @@ function generate_prototype(setting, generate)
             local current_tier = generate:random(min_tier, max_tier)
             local item_lists = tier_list[current_tier].items
             local type_table = get_type_table(settings_type_table, item_lists, tier_list[tier].fluidCount)
-            add_item(tier_list[tier], item_lists, type_table, generate)
+            if not add_item(tier_list[tier], item_lists, type_table, generate) then
+                ingredientCount = (ingredientCount >= 0) and (ingredientCount - 1) or 0
+            end
         end
         tier_list[tier].ingredients = tier_list[tier].ingredients:to_list()
     end

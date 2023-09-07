@@ -1,5 +1,5 @@
-local Set = require("libs.data_structs.Set")
-local Lookup = require("prep.lookup")
+local Set = require("libs.mods.set")
+local Lookup = require("libs.common.lookup")
 
 -- function deklaration
 local add_tiered_recipe,
