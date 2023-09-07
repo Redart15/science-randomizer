@@ -1,11 +1,8 @@
--- require("prototype.recipe")
-local lookup = require("libs.common.lookup")
-local util = require("libs.common.util")
-local calc_prototype = require("prep.calc_prototype")
+local calc_prototype = require("script.calc_prototype")
+local read_prototype = require("script.read_prototype")
+local create_prototypes = require("prototype.recipe")
 
-
-local read_settings
-
+local read_settings, get_prototype
 
 function read_settings(config)
     local temp = {}
@@ -13,17 +10,21 @@ function read_settings(config)
     temp.allowFluid = settings.startup[config .. "allow-fluid"].value
     temp.allowRaw = settings.startup[config .. "allow-raw"].value
     temp.allowScience = settings.startup[config .. "allow-science"].value
-    temp.allowGrown = settings.startup[config .. "allow-grown"].value 
+    temp.allowGrown = settings.startup[config .. "allow-grown"].value
     temp.isBalanced = settings.startup[config .. "balanced"].value
     temp.inTier = settings.startup[config .. "in-tier"].value
     temp.setRecipe = settings.startup[config .. "set-packs"].value
     return temp
 end
 
+function get_prototype(config)
+    if config.setRecipe == "" then
+        return calc_prototype(config)
+    else
+        return read_prototype(config.setRecipe)
+    end
+end
+
 local config = read_settings("Redart-Science-Randomizer-")
-local prototypess = calc_prototype(config)
-print("hi")
--- local data = data.raw.recipe["automation-science-pack"]
--- -- local table_string = recipe2String(data)
--- -- print(table_string)
--- print("hi")
+local prototypes = get_prototype(config)
+create_prototypes(prototypes)
