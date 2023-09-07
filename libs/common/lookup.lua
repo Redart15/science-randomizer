@@ -99,7 +99,7 @@ lookup_table["raw"] = {
 lookup_table["grown"] = {
     "raw-fish",
     "wood",
-    "wood-chest",
+    "wooden-chest",
     "combat-shotgun",
     "shotgun",
     "small-electric-pole",
