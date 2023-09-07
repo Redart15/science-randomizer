@@ -2,12 +2,10 @@ require("libs.random.randomlua")
 local set = require("libs.common.set")
 local lookup = require("libs.common.lookup")
 local util = require("libs.common.util")
-local cost_table = {}
-
--- constant
-local fluidMuliplier = 20
 
 local function calc_prototype(config)
+    local fluidMuliplier = 20
+    local cost_table = {}
     -- function deklaration
     -- techs2Recipes
     local add_tiered_recipe,
@@ -39,10 +37,9 @@ local function calc_prototype(config)
     set_cost
 
 
-    ---comment
-    ---@param collector table
-    ---@param tech any
-    function add_tiered_recipe(collector, tech)
+    ---@param accumulator table
+    ---@param tech table 
+    function add_tiered_recipe(accumulator, tech)
         local ingredients = research_packs(tech.unit.ingredients)
         local effects = unlocks_effects(tech)
         effects = filter_recipe(effects)
@@ -50,13 +47,13 @@ local function calc_prototype(config)
             for _, effect in ipairs(effects) do
                 local tier = get_tier(tech.name, ingredients)
                 if lookup.max_tier >= tier then
-                    collector:add(effect, tier)
+                    accumulator:add(effect, tier)
                 end
             end
         end
     end
 
-    ---comment
+    --- effects can shuffled in normal if normal is defined
     ---@param tech table
     ---@return table
     function unlocks_effects(tech)
@@ -69,7 +66,6 @@ local function calc_prototype(config)
         return unlocks_effects(tech.normal)
     end
 
-    ---comment
     ---@param effects table
     ---@return table
     function filter_recipe(effects)
@@ -85,14 +81,11 @@ local function calc_prototype(config)
         return temp
     end
 
-    ---comment
+    --- the pack unlock needs to be accounted for as well in order to be categorised correctly
     ---@param techname string
     ---@param ingredients table
     ---@return integer
     function get_tier(techname, ingredients)
-        if techname == "logistic-science-pack" then
-            print("hi")
-        end
         local tier = 1
         local packs = set.from_list(ingredients)
         packs:add(techname, 0)
@@ -107,8 +100,8 @@ local function calc_prototype(config)
         return tier + 1
     end
 
-    ---comment
-    ---@param ingredients any
+    --- get the packs used in research
+    ---@param ingredients table
     ---@return table
     function research_packs(ingredients)
         local temp = {}
@@ -125,7 +118,7 @@ local function calc_prototype(config)
         return temp
     end
 
-    ---comment
+    --- recipes enablebility can be shuffled in normal if defined
     ---@param recipe table
     ---@return boolean
     function is_enabled(recipe)
@@ -141,26 +134,25 @@ local function calc_prototype(config)
         return recipe.enabled == true or recipe.enabled == nil
     end
 
-    ---comment
-    ---@param collector table
+    --- collects item that are results from recipes
+    ---@param accumulator table
     ---@param recipe table
     ---@param tier integer
-    function add_results(collector, recipe, tier)
+    function add_results(accumulator, recipe, tier)
         local results = util.get_results(recipe)
         for _, res in ipairs(results) do
             res.tier = tier
-            collector:add(res.name, res)
+            accumulator:add(res.name, res)
         end
     end
 
-    ---comment
+    --- some item are never are used as results in recipes and would go otherwise unaccounted
     ---@param collector table
     ---@param recipe table
     ---@param tier integer
     function add_ingredients(collector, recipe, tier)
         local ingredient = util.get_ingredients(recipe)
         for _, ing in ipairs(ingredient) do
-            ing.amount = 1
             ing.tier = tier
             if not collector:add(ing.name, ing) then
                 local current_tier = collector.values[ing.name].tier
@@ -171,26 +163,31 @@ local function calc_prototype(config)
         end
     end
 
-    ---comment
-    ---@param config table
+    --- technicly configuration is not needed as it is avaible in global
+    ---@param configuration table
     ---@return table
-    function populate(config)
+    function populate(configuration)
         local temp = { "item", }
-        if config.allowFluid then
+        if configuration.allowFluid then
             table.insert(temp, "fluid")
         end
-        if config.allowRaw then
+        if configuration.allowRaw then
             table.insert(temp, "raw")
         end
-        if config.allowScience then
+        if configuration.allowScience then
             table.insert(temp, "science")
         end
-        if config.allowGrown then
+        if configuration.allowGrown then
             table.insert(temp, "grown")
         end
         return temp
     end
 
+    --- unlike the populate function that denoted what type can be use this return table of what is avaible from the populated table
+    ---@param type_table table
+    ---@param item_lists table
+    ---@param fluidCount integer
+    ---@return table
     function get_type_table(type_table, item_lists, fluidCount)
         local temp = {}
         for index, ttype in ipairs(type_table) do
@@ -205,6 +202,12 @@ local function calc_prototype(config)
         return temp
     end
 
+    --- return if the action was a succsess, needed for lineare probing of the table
+    ---@param current_pack table
+    ---@param item_list table
+    ---@param type_table table
+    ---@param generate table
+    ---@return boolean
     function add_item(current_pack, item_list, type_table, generate)
         local table_index = generate:random(1, #type_table)
         for k = 1, #type_table do
@@ -213,13 +216,16 @@ local function calc_prototype(config)
                 local item_index = generate:random(1, #item_list[ttype])
                 for i = 1, #item_list[ttype] do
                     local item = item_list[ttype][item_index]
-                    if current_pack.ingredients:add(item.name, item) then
-                        item.amount = generate:random(1, 10)
-                        item.type = "item"
+                    local non_ref_item = {}
+                    non_ref_item.name = item.name
+                    if current_pack.ingredients:add(item.name, non_ref_item) then
+                        print("hi")
+                        non_ref_item.amount = generate:random(1, 10)
+                        non_ref_item.type = "item"
                         if ttype == "fluid" then
                             current_pack.fluidCount = current_pack.fluidCount + 1
-                            item.type = "fluid"
-                            item.amount = item.amount * fluidMuliplier
+                            non_ref_item.type = "fluid"
+                            non_ref_item.amount = non_ref_item.amount * fluidMuliplier
                         end
                         return true
                     else
@@ -232,6 +238,8 @@ local function calc_prototype(config)
         return false
     end
 
+    ---@param name string
+    ---@return table
     function initRecipe(name)
         local recipe = {}
         recipe.name = name
@@ -240,6 +248,8 @@ local function calc_prototype(config)
         return recipe
     end
 
+    ---@param fluidCount integer
+    ---@return string
     function calc_crafting_category(fluidCount)
         if fluidCount == 0 then
             return "crafting"
@@ -250,6 +260,9 @@ local function calc_prototype(config)
         return "chemistry"
     end
 
+    --- calculated the cost of the recipe ingredients
+    ---@param ingredients table
+    ---@return unknown
     function calc_costs(ingredients)
         local sum = 0
         for _, item in pairs(ingredients) do
@@ -258,6 +271,9 @@ local function calc_prototype(config)
         return sum
     end
 
+    --- calculated the cost of the recipe it self
+    ---@param itemname string
+    ---@return integer
     function calc_cost(itemname)
         local recipe = data.raw.recipe[itemname]
         local ingredients = util.get_ingredients(recipe)
@@ -275,6 +291,8 @@ local function calc_prototype(config)
         return cost
     end
 
+    ---@param name string
+    ---@return integer
     function set_cost(name)
         local local_cost = lookup["base"][name]
         local lookup_table_base = cost_table[name]
@@ -287,6 +305,9 @@ local function calc_prototype(config)
         return calc_cost(name)
     end
 
+    --- needed to adjust the recipe cost by the amout it creates
+    ---@param recipe table
+    ---@return integer
     function get_count(recipe)
         local count
         if recipe.results ~= nil and next(recipe.results) ~= nil then
@@ -303,6 +324,11 @@ local function calc_prototype(config)
         return 1
     end
 
+    --- returns 1 if the player does not want it to be balanced
+    ---@param name string
+    ---@param ingredients table
+    ---@param balance boolean
+    ---@return integer
     function calc_result_count(name, ingredients, balance)
         if balance == true then
             local cost = calc_cost(name)
@@ -312,6 +338,10 @@ local function calc_prototype(config)
         return 1
     end
 
+    --- written as I intend to expand this function in future
+    ---@param prototype table
+    ---@param balance boolean
+    ---@return table
     function build_results(prototype, balance)
         local result_count = calc_result_count(prototype.name, prototype.ingredients, balance)
         local result = {
@@ -322,6 +352,11 @@ local function calc_prototype(config)
         return { result }
     end
 
+    --- this function is for now a little overloaded
+    ---@param tier_list table
+    ---@param config table
+    ---@param generate table
+    ---@return table
     function generate_prototype(tier_list, config, generate)
         local recipes = {}
         local config_type_table = populate(config)
@@ -348,9 +383,6 @@ local function calc_prototype(config)
     end
 
     -- ========================================================================
-    if config.setRecipe ~= "" then
-        return
-    end
 
     local recipes = set.init()
     for _, tech in pairs(data.raw.technology) do
