@@ -58,7 +58,6 @@ data:extend(
             default_value = "",
             allow_blank = true,
             allow_trim = true,
-            hidden = true,
             order = "aaab"
         },
     }
