@@ -9,7 +9,7 @@ Date: 06.09.2023
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.3
 Date: 03.09.2023
-  Major Features:
+  Minor Features:
     - Adjusted recipe result_count to reflect the recipe cost
     - Added option to toggle item types off
   Optimizations:
