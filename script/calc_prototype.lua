@@ -34,11 +34,13 @@ local function calc_prototype(config)
     build_results,
     get_count,
     calc_result_count,
-    set_cost
+    set_cost,
+    populate_ingredients,
+    populate_Item
 
 
     ---@param accumulator table
-    ---@param tech table 
+    ---@param tech table
     function add_tiered_recipe(accumulator, tech)
         local ingredients = research_packs(tech.unit.ingredients)
         local effects = unlocks_effects(tech)
@@ -163,34 +165,31 @@ local function calc_prototype(config)
         end
     end
 
-    --- technicly configuration is not needed as it is avaible in global
-    ---@param configuration table
     ---@return table
-    function populate(configuration)
+    function populate()
         local temp = { "item", }
-        if configuration.allowFluid then
+        if config.allowFluid then
             table.insert(temp, "fluid")
         end
-        if configuration.allowRaw then
+        if config.allowRaw then
             table.insert(temp, "raw")
         end
-        if configuration.allowScience then
+        if config.allowScience then
             table.insert(temp, "science")
         end
-        if configuration.allowGrown then
+        if config.allowGrown then
             table.insert(temp, "grown")
         end
         return temp
     end
 
     --- unlike the populate function that denoted what type can be use this return table of what is avaible from the populated table
-    ---@param type_table table
     ---@param item_lists table
     ---@param fluidCount integer
     ---@return table
-    function get_type_table(type_table, item_lists, fluidCount)
+    function get_type_table(item_lists, fluidCount)
         local temp = {}
-        for index, ttype in ipairs(type_table) do
+        for index, ttype in ipairs(config.types_table) do
             if next(item_lists[ttype]) ~= nil then
                 if ttype == "fluid" and fluidCount < 1 then
                     table.insert(temp, ttype)
@@ -200,6 +199,19 @@ local function calc_prototype(config)
             end
         end
         return temp
+    end
+
+    function populate_Item(item, generate, ttype, current_pack)
+        item.name = item.name
+        item.amount = generate:random(1, 10)
+        if ttype == "fluid" then
+            current_pack.fluidCount = current_pack.fluidCount + 1
+            item.type = "fluid"
+            item.amount = item.amount * fluidMuliplier
+        else
+            item.type = "item"
+        end
+        return true
     end
 
     --- return if the action was a succsess, needed for lineare probing of the table
@@ -215,19 +227,9 @@ local function calc_prototype(config)
             if (ttype == "fluid" and current_pack.fluidCount < 2) or ttype ~= "fluid" then
                 local item_index = generate:random(1, #item_list[ttype])
                 for i = 1, #item_list[ttype] do
-                    local item = item_list[ttype][item_index]
-                    local non_ref_item = {}
-                    non_ref_item.name = item.name
-                    if current_pack.ingredients:add(item.name, non_ref_item) then
-                        print("hi")
-                        non_ref_item.amount = generate:random(1, 10)
-                        non_ref_item.type = "item"
-                        if ttype == "fluid" then
-                            current_pack.fluidCount = current_pack.fluidCount + 1
-                            non_ref_item.type = "fluid"
-                            non_ref_item.amount = non_ref_item.amount * fluidMuliplier
-                        end
-                        return true
+                    local item = table.deepcopy(item_list[ttype][item_index])
+                    if current_pack.ingredients:add(item.name, item) then
+                        return populate_Item(item, generate, ttype, current_pack)
                     else
                         item_index = (item_index % #item_list[ttype]) + 1
                     end
@@ -275,6 +277,9 @@ local function calc_prototype(config)
     ---@param itemname string
     ---@return integer
     function calc_cost(itemname)
+        if itemname:sub(-#"-barrel") == "-barrel" and itemname:sub(1, #"empty") ~= "empty" then
+            itemname = "fill-" .. itemname
+        end
         local recipe = data.raw.recipe[itemname]
         local ingredients = util.get_ingredients(recipe)
         if next(ingredients) == nil then
@@ -294,13 +299,13 @@ local function calc_prototype(config)
     ---@param name string
     ---@return integer
     function set_cost(name)
-        local local_cost = lookup["base"][name]
-        local lookup_table_base = cost_table[name]
+        local lookup_table_costs = lookup["costs"][name]
+        local local_cost = cost_table[name]
+        if lookup_table_costs ~= nil then
+            return lookup_table_costs
+        end
         if local_cost ~= nil then
             return local_cost
-        end
-        if lookup_table_base ~= nil then
-            return lookup_table_base
         end
         return calc_cost(name)
     end
@@ -352,31 +357,38 @@ local function calc_prototype(config)
         return { result }
     end
 
+    ---comment
+    ---@param tier_list table
+    ---@param accumulator table
+    ---@param generate table
+    function populate_ingredients(tier_list, accumulator, generate, tier)
+        local max_tier = tier
+        local min_tier = config.inTier and tier or 1
+        local ingredientCount = generate:random(1, 5)
+        while accumulator.ingredients.size < ingredientCount do
+            local current_tier = generate:random(min_tier, max_tier)
+            local item_lists = tier_list[current_tier].items
+            local type_table = get_type_table(item_lists, accumulator.fluidCount)
+            if not add_item(accumulator, item_lists, type_table, generate) then
+                ingredientCount = (ingredientCount >= 0) and (ingredientCount - 1) or 0
+            end
+        end
+    end
+
     --- this function is for now a little overloaded
     ---@param tier_list table
-    ---@param config table
     ---@param generate table
     ---@return table
-    function generate_prototype(tier_list, config, generate)
+    function generate_prototype(tier_list, generate)
         local recipes = {}
-        local config_type_table = populate(config)
+        config.types_table = populate()
         for tier = 1, #tier_list do
             local recipe = initRecipe(tier_list[tier].name)
-            local max_tier = tier
-            local min_tier = config.inTier and tier or 1
-            local ingredientCount = generate:random(1, 5)
-            while recipe.ingredients.size < ingredientCount do
-                local current_tier = generate:random(min_tier, max_tier)
-                local item_lists = tier_list[current_tier].items
-                local type_table = get_type_table(config_type_table, item_lists, recipe.fluidCount)
-                if not add_item(recipe, item_lists, type_table, generate) then
-                    ingredientCount = (ingredientCount >= 0) and (ingredientCount - 1) or 0
-                end
-            end
-            recipe.category = calc_crafting_category(recipe.fluidCount)
-            recipe.fluidCount = nil
+            populate_ingredients(tier_list, recipe, generate, tier)
             recipe.ingredients = recipe.ingredients:to_list()
+            recipe.category = calc_crafting_category(recipe.fluidCount)
             recipe.results = build_results(recipe, config.isBalanced)
+            recipe.fluidCount = nil
             table.insert(recipes, recipe)
         end
         return recipes
@@ -450,7 +462,7 @@ local function calc_prototype(config)
     end
 
     local gen = mwc(config.seed)
-    local prototypes = generate_prototype(tiered_item_list, config, gen)
+    local prototypes = generate_prototype(tiered_item_list, gen)
     return prototypes
     -- ========================================================================
 end
