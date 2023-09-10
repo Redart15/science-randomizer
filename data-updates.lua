@@ -1,6 +1,6 @@
-local calc_prototype = require("script.calc_prototype")
+local build_prototype = require("script.build_prototype")
 local create_prototypes = require("prototype.recipe")
-local util = require("libs.common.util")
+local recipe_derialization = require("script.recipe_serialization").recipe_derialization
 
 local read_settings, get_prototype
 
@@ -19,9 +19,9 @@ end
 
 function get_prototype(config)
     if config.setRecipe == "" then
-        return calc_prototype(config)
+        return build_prototype(config)
     else
-        return util.string2Recipes(config.setRecipe)
+        return recipe_derialization(config.setRecipe)
     end
 end
 
