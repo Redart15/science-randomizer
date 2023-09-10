@@ -17,6 +17,7 @@ Date: 03.09.2023
     - Added option to toggle item types off
   Optimizations:
     - Cache item cost to increase performance
+    - ate the 0.0.2 version cause I was hungry
   Debug:
     - Refactored most the code, to make it easier to maintain and expand
 ---------------------------------------------------------------------------------------------------
