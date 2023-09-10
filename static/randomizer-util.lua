@@ -2,7 +2,7 @@ local util = {}
 
 local fix_up
 
----comment
+--- ingredients/results can be saves as tables, arrays or single values
 ---@param results table
 ---@return table
 function fix_up(results)
@@ -32,7 +32,7 @@ function fix_up(results)
     return temp
 end
 
----comment
+--- only need normal tabl
 ---@param recipe table
 ---@return table
 function util.get_ingredients(recipe)
@@ -48,7 +48,7 @@ function util.get_ingredients(recipe)
     return {}
 end
 
----comment
+--- only need normal table
 ---@param recipe table
 ---@return table
 function util.get_results(recipe)
@@ -61,6 +61,8 @@ function util.get_results(recipe)
     return fix_up({ recipe.result })
 end
 
+---@param recipe table
+---@return string
 function util.get_category(recipe)
     if recipe.category == nil then
         return "crafting"
@@ -68,6 +70,8 @@ function util.get_category(recipe)
     return recipe.category
 end
 
+---@param item table
+---@return string
 function util.get_item_type(item)
     if item.type == nil then
         return "item"
