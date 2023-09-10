@@ -10,12 +10,20 @@ function io_prototype.recipe_derialization(input)
     string2Recipe,
     checkItem
 
+    ---@param string string
+    ---@return table
     function string2Attributes(string)
         local strings = {}
         local count = 1
         for match in string:gmatch("[^|]+") do
             strings[count] = {}
+            if match == nil then
+                error(string.format("String is missing value, or is malformed. Nil match in match: %s\nInput string:\n", string, input))
+            end
             for submatch in match:gmatch("(.-)>+") do
+                if submatch == nil then
+                    error(string.format("String is missing value, or is malformed. Nil submatch in match: %s\nInput string:\n",match, input))
+                end
                 table.insert(strings[count], submatch)
             end
             count = count + 1
@@ -23,9 +31,11 @@ function io_prototype.recipe_derialization(input)
         return strings
     end
 
+    --- currently the recipes are only using these categories
+    ---@param string any
+    ---@return any
     function string2CraftingCat(string)
         local check = false
-        -- string can be nil has to be caught
         check = check or string == "crafting"
         check = check or string == "crafting-with-fluid"
         check = check or string == "chemistry"
@@ -33,10 +43,13 @@ function io_prototype.recipe_derialization(input)
             return string
         else
             error(string.format(
-            "Recipe-Crafting-Category is not supported. Supported crafting categories are \"crafting\",\"crafting-with-fluid\",\"chemistry\":%s\nInput string:\n%s", string, input))
+                "Recipe-Crafting-Category is not supported. Supported crafting categories are \"crafting\",\"crafting-with-fluid\",\"chemistry\":%s\nInput string:\n%s",
+                string, input))
         end
     end
 
+    ---@param string string
+    ---@return string
     function string2ItemType(string)
         if string == "item" or string == "fluid" then
             return string
@@ -45,6 +58,8 @@ function io_prototype.recipe_derialization(input)
         end
     end
 
+    ---@param string string
+    ---@return integer
     function string2Amount(string)
         local num = tonumber(string)
         if not num or num ~= math.floor(num) then
@@ -53,19 +68,26 @@ function io_prototype.recipe_derialization(input)
         return num
     end
 
+    ---@param string string
+    ---@return string
     function checkItem(string)
         local check = false
         for ptype in pairs(defines.prototypes.item) do
             for name, _ in pairs(data.raw[ptype]) do
                 check = check or name == string
             end
-          end
+        end
         if not check then
-            error(string.format("Item is not avaible. Please check if the associated mod is enabled: %s\nInput string:\n%s", string, input))
+            error(string.format(
+                "Item is not avaible. Please check if the associated mod is enabled: %s\nInput string:\n%s", string,
+                input))
         end
         return string
     end
 
+
+    ---@param strings table
+    ---@return table
     function string2Items(strings)
         local temps = {}
         for i = 1, #strings, 3 do
@@ -78,6 +100,9 @@ function io_prototype.recipe_derialization(input)
         return temps
     end
 
+    ---comment
+    ---@param string string
+    ---@return table
     function string2Recipe(string)
         local pack = {}
         local subStrings = string2Attributes(string)
@@ -87,7 +112,7 @@ function io_prototype.recipe_derialization(input)
             pack.ingredients = string2Items(subStrings[3])
             pack.results = string2Items(subStrings[4])
         else
-            error(string.format("String is formated incorrectly:%s.\nInput string:\n%s",string, input))
+            error(string.format("String is formated incorrectly:%s.\nInput string:\n%s", string, input))
         end
         return pack
     end
@@ -95,6 +120,9 @@ function io_prototype.recipe_derialization(input)
     local temp = {}
     for match in input:gmatch("(.-)#") do
         local recipe = string2Recipe(match)
+        if match == nil then
+            error(string.format("No match in input-string:%s.", input))
+        end
         table.insert(temp, recipe)
     end
     return temp
@@ -104,6 +132,8 @@ function io_prototype.recipe_serialization(recipes)
     local recipe2String,
     items2String
 
+    ---@param recipe table
+    ---@return string
     function recipe2String(recipe)
         local name           = recipe.name
         local category       = util.get_category(recipe)
@@ -115,9 +145,11 @@ function io_prototype.recipe_serialization(recipes)
         return collect_string
     end
 
-    function items2String(data)
+    ---@param items table
+    ---@return string
+    function items2String(items)
         local string = ""
-        for _, item in ipairs(data) do
+        for _, item in ipairs(items) do
             string = string .. item.name .. ">"
             string = string .. item.amount .. ">"
             string = string .. util.get_item_type(item) .. ">"
