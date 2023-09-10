@@ -16,16 +16,16 @@ end
 
 function lookup_table:get_type(item)
     local data = data.raw.fluid
-    if self.isFluid(item) or data[item] then
+    if self:isFluid(item) or data[item] then
         return "fluid"
     end
-    if self.isGrown(item) then
+    if self:isGrown(item) then
         return "grown"
     end
-    if self.isRaw(item) then
+    if self:isRaw(item) then
         return "raw"
     end
-    if self.isScience(item) then
+    if self:isScience(item) then
         return "science"
     end
     return "item"
