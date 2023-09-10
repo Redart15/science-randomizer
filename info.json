@@ -1,10 +1,18 @@
 {
-    "name": "science-randomizer",
-    "version": "1.0.0",
-    "title": "Science-Randomizer",
-    "author": "Redart15",
-    "factorio_version": "1.1",
-    "homepage": "https://github.com/Redart15/science-randomizer",
-    "dependencies": ["base >= 1.1"],
-    "description": "Randomizes science recipes"
-  }
+  "name": "science-randomizer",
+  "version": "1.0.0",
+  "title": "Science-Randomizer",
+  "author": "Redart15",
+  "factorio_version": "1.1",
+  "description": "Randomizes science recipes",
+  "homepage": "https://github.com/Redart15/science-randomizer",
+  "dependencies": [
+    "base >= 1.1",
+    "! Krastorio",
+    "! Krastorio2",
+    "! space-exploration",
+    "! More Science",
+    "! Space-Exploration-Modpack",
+    "! bobtech"
+  ]
+}
