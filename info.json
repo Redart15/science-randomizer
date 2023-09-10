@@ -4,6 +4,7 @@
     "title": "Science-Randomizer",
     "author": "Redart15",
     "factorio_version": "1.1",
+    "homepage": "https://github.com/Redart15/science-randomizer",
     "dependencies": ["base >= 1.1"],
     "description": "Randomizes science recipes"
   }
