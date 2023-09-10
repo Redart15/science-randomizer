@@ -330,7 +330,7 @@ local function calc_prototype(config)
         local recipe = data.raw.recipe[itemname]
         local ingredients = util.get_ingredients(recipe)
         if next(ingredients) == nil then
-            return 3
+            return 30
         end
         local sum = 0
         for _, ing in ipairs(ingredients) do
