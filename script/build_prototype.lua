@@ -4,9 +4,19 @@ local lookup = require("static.randomizer-lookup")
 local util = require("static.randomizer-util")
 
 local function calc_prototype(config)
+    --[[
+        The function calculated the prototypes for eauch of the 6 recipes.
+        - queries all recipes unlocked by tech as well as categorises them
+        - collect all item used or results from recipes as well as assignign type
+        - collectr all item into the tier for each science pack
+        - sort eauch of the tier list, to keep them consistent (factorio dict are deterministic, but this is a precausn woth doing)
+        - pick out of tier based on settings item and finilizer the prototype
+        - returns the functrion
+    ]]
+
     local fluidMuliplier = 20
     local cost_table = {}
-    -- function deklaration
+    -- forward function declaration
     -- techs2Recipes
     local add_tiered_recipe,
     unlocks_effects,
@@ -41,6 +51,8 @@ local function calc_prototype(config)
     list2Dict,
     addToDict
 
+    ---@param dict table
+    ---@return table
     function dictToList(dict)
         local list = {}
         for _, value in pairs(dict) do
@@ -49,6 +61,8 @@ local function calc_prototype(config)
         return list
     end
 
+    ---@param list any
+    ---@return table
     function list2Dict(list)
         local dict = {}
         for index, value in ipairs(list) do
@@ -57,6 +71,10 @@ local function calc_prototype(config)
         return dict
     end
 
+    ---@param dict table
+    ---@param key string
+    ---@param value any
+    ---@return boolean
     function addToDict(dict, key, value)
         if key == nil or value == nil then
             return false
@@ -173,7 +191,7 @@ local function calc_prototype(config)
         local results = util.get_results(recipe)
         for _, res in ipairs(results) do
             res.tier = tier
-            addToDict(accumulator,res.name, res)
+            addToDict(accumulator, res.name, res)
         end
     end
 
@@ -438,7 +456,7 @@ local function calc_prototype(config)
             if lookup:isScience(recipe.name) then
                 tier = 2
             end
-            addToDict(recipes ,recipe.name, tier)
+            addToDict(recipes, recipe.name, tier)
         end
     end
 

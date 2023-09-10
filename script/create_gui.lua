@@ -1,6 +1,9 @@
 local mod_gui = require("mod-gui")
 local create = {}
 
+--- export recipe sctring
+---@param player LuaPlayer
+---@param generateString function
 function create.exportField(player, generateString)
     local screen_element = player.gui.screen
     local text_frame = screen_element.add {
@@ -23,7 +26,8 @@ function create.exportField(player, generateString)
     text_box.word_wrap = true
 end
 
-
+--- create the button at the top left
+---@param player LuaPlayer
 function create.button(player)
     local player_globals = global.players[player.index]
     local flow_button = mod_gui.get_button_flow(player)
@@ -37,9 +41,11 @@ function create.button(player)
         tooltip = "Export science recipe",
         style = player_globals.toggle and "yellow_slot_button" or mod_gui.button_style
     }
-    -- create.toggle_textField(player)
 end
 
+--- toggle the textfield
+---@param player LuaPlayer
+---@param generateString function
 function create.toggle_textField(player, generateString)
     local screen_element = player.gui.screen
     if screen_element.randomizer_export_frame == nil then
