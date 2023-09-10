@@ -16,38 +16,38 @@ end
 
 function lookup_table:get_type(item)
     local data = data.raw.fluid
-    if isFluid(item) or data[item] then
+    if self.isFluid(item) or data[item] then
         return "fluid"
     end
-    if isGrown(item) then
+    if self.isGrown(item) then
         return "grown"
     end
-    if isRaw(item) then
+    if self.isRaw(item) then
         return "raw"
     end
-    if isScience(item) then
+    if self.isScience(item) then
         return "science"
     end
     return "item"
 end
 
-function isFluid(input)
-    return check(input, lookup_table.fluid)
+function lookup_table:isFluid(input)
+    return check(input, self.fluid)
 end
 
-function isRaw(input)
-    return check(input, lookup_table.raw)
+function lookup_table:isRaw(input)
+    return check(input, self.raw)
 end
 
-function isGrown(input)
-    return check(input, lookup_table.grown)
+function lookup_table:isGrown(input)
+    return check(input, self.grown)
 end
 
-function isScience(input)
-    if input == nil or lookup_table.science == nil then
+function lookup_table:isScience(input)
+    if input == nil or self.science == nil then
         return false
     end
-    for key, value in pairs(lookup_table.science) do
+    for key, value in pairs(self.science) do
         if input == key then
             return true
         end
