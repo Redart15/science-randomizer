@@ -1,7 +1,7 @@
 require("libs.random.randomlua")
-local set = require("libs.common.set")
-local lookup = require("libs.common.lookup")
-local util = require("libs.common.util")
+local set = require("script.set")
+local lookup = require("static.randomizer-lookup")
+local util = require("static.randomizer-util")
 
 local function calc_prototype(config)
     local fluidMuliplier = 20
@@ -91,7 +91,7 @@ local function calc_prototype(config)
         local tier = 1
         local packs = set.from_list(ingredients)
         packs:add(techname, 0)
-        for key in packs:iterate() do
+        for key, _ in pairs(packs) do
             local temp = lookup.science[key]
             if temp ~= nil then
                 if temp > tier then
