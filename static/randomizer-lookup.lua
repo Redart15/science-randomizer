@@ -1,6 +1,8 @@
 local lookup_table = {}
 
-local function check(input, lookup)
+local isFluid, isRaw, isGrown, isScience, check
+
+function check(input, lookup)
     if input == nil or lookup == nil then
         return false
     end
@@ -14,50 +16,38 @@ end
 
 function lookup_table:get_type(item)
     local data = data.raw.fluid
-    if self:isFluid(item) or data[item] then
+    if isFluid(item) or data[item] then
         return "fluid"
     end
-    if self:isGrown(item) then
+    if isGrown(item) then
         return "grown"
     end
-    if self:isRaw(item) then
+    if isRaw(item) then
         return "raw"
     end
-    if self:isScience(item) then
+    if isScience(item) then
         return "science"
     end
     return "item"
 end
 
-function lookup_table:isBase(input)
-    if input == nil or self.base == nil then
+function isFluid(input)
+    return check(input, lookup_table.fluid)
+end
+
+function isRaw(input)
+    return check(input, lookup_table.raw)
+end
+
+function isGrown(input)
+    return check(input, lookup_table.grown)
+end
+
+function isScience(input)
+    if input == nil or lookup_table.science == nil then
         return false
     end
-    for key, _ in pairs(self.base) do
-        if input == key then
-            return true
-        end
-    end
-    return false
-end
-
-function lookup_table:isFluid(input)
-    return check(input, self.fluid)
-end
-
-function lookup_table:isRaw(input)
-    return check(input, self.raw)
-end
-
-function lookup_table:isGrown(input)
-    return check(input, self.grown)
-end
-
-function lookup_table:isScience(input)
-    if input == nil or self.science == nil then
-        return false
-    end
-    for key, value in pairs(self.science) do
+    for key, value in pairs(lookup_table.science) do
         if input == key then
             return true
         end
