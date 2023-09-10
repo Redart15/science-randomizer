@@ -1,5 +1,5 @@
 require("libs.random.randomlua")
-local set = require("script.set")
+-- local set = require("script.set")
 local lookup = require("static.randomizer-lookup")
 local util = require("static.randomizer-util")
 
@@ -36,8 +36,37 @@ local function calc_prototype(config)
     calc_result_count,
     set_cost,
     populate_ingredients,
-    populate_Item
+    populate_Item,
+    dictToList,
+    list2Dict,
+    addToDict
 
+    function dictToList(dict)
+        local list = {}
+        for _, value in pairs(dict) do
+            table.insert(list, value)
+        end
+        return list
+    end
+
+    function list2Dict(list)
+        local dict = {}
+        for index, value in ipairs(list) do
+            dict[value] = index
+        end
+        return dict
+    end
+
+    function addToDict(dict, key, value)
+        if key == nil or value == nil then
+            return false
+        end
+        if not dict[key] then
+            dict[key] = value
+            return true
+        end
+        return false
+    end
 
     ---@param accumulator table
     ---@param tech table
@@ -49,7 +78,7 @@ local function calc_prototype(config)
             for _, effect in ipairs(effects) do
                 local tier = get_tier(tech.name, ingredients)
                 if lookup.max_tier >= tier then
-                    accumulator:add(effect, tier)
+                    addToDict(accumulator, effect, tier)
                 end
             end
         end
@@ -89,8 +118,8 @@ local function calc_prototype(config)
     ---@return integer
     function get_tier(techname, ingredients)
         local tier = 1
-        local packs = set.from_list(ingredients)
-        packs:add(techname, 0)
+        local packs = list2Dict(ingredients)
+        addToDict(packs, techname, 0)
         for key, _ in pairs(packs) do
             local temp = lookup.science[key]
             if temp ~= nil then
@@ -144,7 +173,7 @@ local function calc_prototype(config)
         local results = util.get_results(recipe)
         for _, res in ipairs(results) do
             res.tier = tier
-            accumulator:add(res.name, res)
+            addToDict(accumulator,res.name, res)
         end
     end
 
@@ -156,10 +185,10 @@ local function calc_prototype(config)
         local ingredient = util.get_ingredients(recipe)
         for _, ing in ipairs(ingredient) do
             ing.tier = tier
-            if not collector:add(ing.name, ing) then
-                local current_tier = collector.values[ing.name].tier
+            if not addToDict(collector, ing.name, ing) then
+                local current_tier = collector[ing.name].tier
                 if tier < current_tier then
-                    collector.values[ing.name].tier = tier
+                    collector[ing.name].tier = tier
                 end
             end
         end
@@ -228,7 +257,7 @@ local function calc_prototype(config)
                 local item_index = generate:random(1, #item_list[ttype])
                 for i = 1, #item_list[ttype] do
                     local item = table.deepcopy(item_list[ttype][item_index])
-                    if current_pack.ingredients:add(item.name, item) then
+                    if addToDict(current_pack.ingredients, item.name, item) then
                         return populate_Item(item, generate, ttype, current_pack)
                     else
                         item_index = (item_index % #item_list[ttype]) + 1
@@ -246,7 +275,7 @@ local function calc_prototype(config)
         local recipe = {}
         recipe.name = name
         recipe.fluidCount = 0
-        recipe.ingredients = set.init()
+        recipe.ingredients = {}
         return recipe
     end
 
@@ -277,7 +306,7 @@ local function calc_prototype(config)
     ---@param itemname string
     ---@return integer
     function calc_cost(itemname)
-        if itemname:sub(-#"-barrel") == "-barrel" and itemname:sub(1, #"empty") ~= "empty" then
+        if itemname:sub(- #"-barrel") == "-barrel" and itemname:sub(1, #"empty") ~= "empty" then
             itemname = "fill-" .. itemname
         end
         local recipe = data.raw.recipe[itemname]
@@ -365,13 +394,15 @@ local function calc_prototype(config)
         local max_tier = tier
         local min_tier = config.inTier and tier or 1
         local ingredientCount = generate:random(1, 5)
-        while accumulator.ingredients.size < ingredientCount do
+        local currentIngredientCount = 0
+        while currentIngredientCount < ingredientCount do
             local current_tier = generate:random(min_tier, max_tier)
             local item_lists = tier_list[current_tier].items
             local type_table = get_type_table(item_lists, accumulator.fluidCount)
             if not add_item(accumulator, item_lists, type_table, generate) then
                 ingredientCount = (ingredientCount >= 0) and (ingredientCount - 1) or 0
             end
+            currentIngredientCount = currentIngredientCount + 1
         end
     end
 
@@ -385,7 +416,7 @@ local function calc_prototype(config)
         for tier = 1, #tier_list do
             local recipe = initRecipe(tier_list[tier].name)
             populate_ingredients(tier_list, recipe, generate, tier)
-            recipe.ingredients = recipe.ingredients:to_list()
+            recipe.ingredients = dictToList(recipe.ingredients)
             recipe.category = calc_crafting_category(recipe.fluidCount)
             recipe.results = build_results(recipe, config.isBalanced)
             recipe.fluidCount = nil
@@ -396,7 +427,7 @@ local function calc_prototype(config)
 
     -- ========================================================================
 
-    local recipes = set.init()
+    local recipes = {}
     for _, tech in pairs(data.raw.technology) do
         add_tiered_recipe(recipes, tech)
     end
@@ -407,17 +438,17 @@ local function calc_prototype(config)
             if lookup:isScience(recipe.name) then
                 tier = 2
             end
-            recipes:add(recipe.name, tier)
+            addToDict(recipes ,recipe.name, tier)
         end
     end
 
-    local item_set = set.init()
-    for key, tier in pairs(recipes.values) do
+    local item_set = {}
+    for key, tier in pairs(recipes) do
         local recipe = data.raw.recipe[key]
         add_results(item_set, recipe, tier)
         add_ingredients(item_set, recipe, tier)
     end
-    local item_list = item_set:to_list()
+    local item_list = dictToList(item_set)
     table.sort(
         item_list,
         function(a, b)
