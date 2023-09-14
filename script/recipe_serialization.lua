@@ -1,133 +1,161 @@
 local io_prototype = {}
 local util = require("static.randomizer-util")
+local lookup = require("static.randomizer-lookup")
 
 function io_prototype.recipe_derialization(input)
-    local string2Attributes,
-    string2CraftingCat,
-    string2ItemType,
-    string2Amount,
-    string2Items,
-    string2Recipe,
-    checkItem
+
+    local error_messages = {
+        attributesCountMismatch = "Attribute count missmatched: ",
+        notASciencepack = "Only support changes to science-packs: ",
+    }
+
+    local divup_attributes,
+    divup_items,
+    det_crafting_category,
+    det_recipe_name,
+    det_item_type,
+    det_item_name,
+    conver2Integer,
+    divup_recipes,
+    det_items,
+    incrementFluidCount
 
     ---@param string string
     ---@return table
-    function string2Attributes(string)
+    function divup_attributes(string)
         local strings = {}
         local count = 1
         for match in string:gmatch("[^|]+") do
-            strings[count] = {}
-            if match == nil then
-                error(string.format("String is missing value, or is malformed. Nil match in match: %s\nInput string:\n", string, input))
-            end
-            for submatch in match:gmatch("(.-)>+") do
-                if submatch == nil then
-                    error(string.format("String is missing value, or is malformed. Nil submatch in match: %s\nInput string:\n",match, input))
-                end
-                table.insert(strings[count], submatch)
-            end
+            assert(match, "Prototype is empty or missing a field: " .. string)
+            strings[count] = divup_items(match)
             count = count + 1
         end
         return strings
     end
 
-    --- currently the recipes are only using these categories
-    ---@param string any
-    ---@return any
-    function string2CraftingCat(string)
-        local check = false
-        check = check or string == "crafting"
-        check = check or string == "crafting-with-fluid"
-        check = check or string == "chemistry"
-        if check then
-            return string
-        else
-            error(string.format(
-                "Recipe-Crafting-Category is not supported. Supported crafting categories are \"crafting\",\"crafting-with-fluid\",\"chemistry\":%s\nInput string:\n%s",
-                string, input))
+    function divup_items(string)
+        local temp = {}
+        for submatch in string:gmatch("(.-)>+") do
+            assert(submatch, "Attribute is empty: " .. string)
+            table.insert(temp, submatch)
         end
+        return temp
+    end
+
+    --- currently the recipes are only using these categories
+    ---@param cat_table table
+    ---@return string
+    function det_crafting_category(cat_table, fluidCount)
+        if #cat_table == 1 then
+            local category = cat_table[1]
+            local check = false
+            check = (check or category == "crafting") and fluidCount == 0
+            check = (check or category == "crafting-with-fluid") and fluidCount == 1
+            check = (check or category == "chemistry") and fluidCount == 2
+            if check then return category end
+            error("Crafting-Category is not supported or is mismatched: " .. category)
+        end
+        error("Only support one crafting-type: " ..  serpent.block(cat_table))
     end
 
     ---@param string string
     ---@return string
-    function string2ItemType(string)
+    function det_item_type(string)
         if string == "item" or string == "fluid" then
             return string
-        else
-            error(string.format("Item type is not supported: %s\nInput string:\n%s", string, input))
         end
+        error("Item-Type is not supported: " .. string)
     end
 
     ---@param string string
     ---@return integer
-    function string2Amount(string)
+    function conver2Integer(string)
         local num = tonumber(string)
-        if not num or num ~= math.floor(num) then
-            error(string.format("Item amount is not an interger: %s\nInput string:\n%s", string, input))
+        if num and num == math.floor(num) then
+            return num
         end
-        return num
+        error("Item amount is not an interger: " .. string)
+    end
+
+    ---@param name_table any
+    ---@return string
+    function det_recipe_name(name_table)
+        if #name_table == 1 then
+            local name = name_table[1]
+            if data.raw.recipe[name] and lookup:isScience(name) then
+                return name
+            end
+            error(error_messages.notASciencepack .. name)
+        end
+        error("Only support changes to science-packs: " .. serpent.block(name_table))
     end
 
     ---@param string string
     ---@return string
-    function checkItem(string)
+    function det_item_name(string)
         local check = false
         for ptype in pairs(defines.prototypes.item) do
             for name, _ in pairs(data.raw[ptype]) do
                 check = check or name == string
             end
         end
-        if not check then
-            error(string.format(
-                "Item is not avaible. Please check if the associated mod is enabled: %s\nInput string:\n%s", string,
-                input))
+        if check then
+            return string
         end
-        return string
+        error("Item does not exist. Please check if the associated mod is enabled: " .. string)
     end
 
+    function incrementFluidCount(item, ttype)
+        if ttype == "fluid" then
+            item.fluidCount = item.fluidCount + 1
+        end
+    end
 
     ---@param strings table
     ---@return table
-    function string2Items(strings)
-        local temps = {}
-        for i = 1, #strings, 3 do
-            local temp = {}
-            temp.name = checkItem(strings[i])
-            temp.type = string2ItemType(strings[i + 2])
-            temp.amount = string2Amount(strings[i + 1])
-            table.insert(temps, temp)
+    function det_items(pack, strings)
+        if #strings % 3 == 0 then
+            local temps = {}
+            for i = 1, #strings, 3 do
+                local temp = {}
+                temp.name = det_item_name(strings[i])
+                temp.type = det_item_type(strings[i + 2])
+                temp.amount = conver2Integer(strings[i + 1])
+                incrementFluidCount(pack, temp.type)
+                table.insert(temps, temp)
+            end
+            return temps
         end
-        return temps
+        error(error_messages.attributesCountMismatch .. string)
     end
 
     ---comment
     ---@param string string
     ---@return table
-    function string2Recipe(string)
+    function divup_recipes(string)
+        local attributes = divup_attributes(string)
         local pack = {}
-        local subStrings = string2Attributes(string)
-        if #subStrings == 4 and #subStrings[3] % 3 == 0 and #subStrings[4] % 3 == 0 then
-            pack.name = subStrings[1][1]
-            pack.category = string2CraftingCat(subStrings[2][1])
-            pack.ingredients = string2Items(subStrings[3])
-            pack.results = string2Items(subStrings[4])
-        else
-            error(string.format("String is formated incorrectly:%s.\nInput string:\n%s", string, input))
+        if #attributes == 4 then
+            pack.fluidCount = 0
+            pack.name = det_recipe_name(attributes[1])
+            pack.ingredients = det_items(pack, attributes[3])
+            pack.category = det_crafting_category(attributes[2][1], pack.fluidCount)
+            pack.results = det_items(pack, attributes[4])
+            return pack
         end
-        return pack
+        error(error_messages.attributesCountMismatch .. string)
     end
 
     local temp = {}
     for match in input:gmatch("(.-)#") do
-        local recipe = string2Recipe(match)
-        if match == nil then
-            error(string.format("No match in input-string:%s.", input))
-        end
+        assert(match, "No match in input-string: " .. input)
+        local recipe = divup_recipes(match)
         table.insert(temp, recipe)
     end
     return temp
 end
 
+-- ============================================================================================================
 function io_prototype.recipe_serialization(recipes)
     local recipe2String,
     items2String
