@@ -4,11 +4,6 @@ local lookup = require("static.randomizer-lookup")
 
 function io_prototype.recipe_derialization(input)
 
-    local error_messages = {
-        attributesCountMismatch = "Attribute count missmatched: ",
-        notASciencepack = "Only support changes to science-packs: ",
-    }
-
     local divup_attributes,
     divup_items,
     det_crafting_category,
@@ -26,7 +21,7 @@ function io_prototype.recipe_derialization(input)
         local strings = {}
         local count = 1
         for match in string:gmatch("[^|]+") do
-            assert(match, "Prototype is empty or missing a field: " .. string)
+            assert(match, "prototype is empty or missing a field: " .. string)
             strings[count] = divup_items(match)
             count = count + 1
         end
@@ -36,7 +31,7 @@ function io_prototype.recipe_derialization(input)
     function divup_items(string)
         local temp = {}
         for submatch in string:gmatch("(.-)>+") do
-            assert(submatch, "Attribute is empty: " .. string)
+            assert(submatch, "attribute is empty: " .. string)
             table.insert(temp, submatch)
         end
         return temp
@@ -49,13 +44,13 @@ function io_prototype.recipe_derialization(input)
         if #cat_table == 1 then
             local category = cat_table[1]
             local check = false
-            check = (check or category == "crafting") and fluidCount == 0
-            check = (check or category == "crafting-with-fluid") and fluidCount == 1
-            check = (check or category == "chemistry") and fluidCount == 2
+            check = check or (category == "crafting" and fluidCount == 0)
+            check = check or (category == "crafting-with-fluid" and fluidCount == 1)
+            check = check or (category == "chemistry" and fluidCount == 2)
             if check then return category end
-            error("Crafting-Category is not supported or is mismatched: " .. category)
+            error("crafting-category is not supported or is mismatched: " .. category)
         end
-        error("Only support one crafting-type: " ..  serpent.block(cat_table))
+        error("only support one crafting-type: " ..  serpent.block(cat_table))
     end
 
     ---@param string string
@@ -64,7 +59,7 @@ function io_prototype.recipe_derialization(input)
         if string == "item" or string == "fluid" then
             return string
         end
-        error("Item-Type is not supported: " .. string)
+        error("item-type is not supported: " .. string)
     end
 
     ---@param string string
@@ -74,7 +69,7 @@ function io_prototype.recipe_derialization(input)
         if num and num == math.floor(num) then
             return num
         end
-        error("Item amount is not an interger: " .. string)
+        error("item-amount is not an interger: " .. string)
     end
 
     ---@param name_table any
@@ -85,9 +80,9 @@ function io_prototype.recipe_derialization(input)
             if data.raw.recipe[name] and lookup:isScience(name) then
                 return name
             end
-            error(error_messages.notASciencepack .. name)
+            error("only support changes to science-packs: " .. name)
         end
-        error("Only support changes to science-packs: " .. serpent.block(name_table))
+        error("recipe has multiple names: " .. serpent.block(name_table))
     end
 
     ---@param string string
@@ -102,7 +97,7 @@ function io_prototype.recipe_derialization(input)
         if check then
             return string
         end
-        error("Item does not exist. Please check if the associated mod is enabled: " .. string)
+        error("item does not exist. Please check if the associated mod is enabled: " .. string)
     end
 
     function incrementFluidCount(item, ttype)
@@ -126,7 +121,7 @@ function io_prototype.recipe_derialization(input)
             end
             return temps
         end
-        error(error_messages.attributesCountMismatch .. string)
+        error("Attribute count missmatched missing fields: " .. serpent.block(strings))
     end
 
     ---comment
@@ -139,11 +134,11 @@ function io_prototype.recipe_derialization(input)
             pack.fluidCount = 0
             pack.name = det_recipe_name(attributes[1])
             pack.ingredients = det_items(pack, attributes[3])
-            pack.category = det_crafting_category(attributes[2][1], pack.fluidCount)
+            pack.category = det_crafting_category(attributes[2], pack.fluidCount)
             pack.results = det_items(pack, attributes[4])
             return pack
         end
-        error(error_messages.attributesCountMismatch .. string)
+        error("Attribute count missmatched missing fields: " .. serpent.block(attributes))
     end
 
     local temp = {}
