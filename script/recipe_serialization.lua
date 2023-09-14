@@ -3,7 +3,6 @@ local util = require("static.randomizer-util")
 local lookup = require("static.randomizer-lookup")
 
 function io_prototype.recipe_derialization(input)
-
     local divup_attributes,
     divup_items,
     det_crafting_category,
@@ -50,14 +49,29 @@ function io_prototype.recipe_derialization(input)
             if check then return category end
             error("crafting-category is not supported or is mismatched: " .. category)
         end
-        error("only support one crafting-type: " ..  serpent.block(cat_table))
+        error("only support one crafting-type: " .. serpent.block(cat_table))
     end
 
     ---@param string string
     ---@return string
-    function det_item_type(string)
-        if string == "item" or string == "fluid" then
-            return string
+    function det_item_type(string, name)
+        if string == "item" then
+            local check = false
+            for ptype in pairs(defines.prototypes.item) do
+                for pname, _ in pairs(data.raw[ptype]) do
+                    check = check or pname == name
+                end
+            end
+            if check then
+                return string
+            end
+            error("item-type mismatch: name=" .. string .. ", type=" .. name)
+        end
+        if string == "fluid" then
+            if data.raw.fluid[name] then
+                return string
+            end
+            error("item-type mismatch: name=" .. string .. ", type=" .. name)
         end
         error("item-type is not supported: " .. string)
     end
@@ -114,7 +128,7 @@ function io_prototype.recipe_derialization(input)
             for i = 1, #strings, 3 do
                 local temp = {}
                 temp.name = det_item_name(strings[i])
-                temp.type = det_item_type(strings[i + 2])
+                temp.type = det_item_type(strings[i + 2], temp.name)
                 temp.amount = conver2Integer(strings[i + 1])
                 incrementFluidCount(pack, temp.type)
                 table.insert(temps, temp)
