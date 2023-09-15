@@ -79,4 +79,24 @@ function util.get_item_type(item)
     return item.type
 end
 
+---@param recipe_name any
+---@return unknown
+function util.find_recipe(recipe_name)
+    do
+        local recipe = data.raw.recipe[recipe_name]
+        if recipe ~= nil then
+            return recipe
+        end
+    end
+    for _, recipe in pairs(data.raw.recipe) do
+        local results = util.get_results(recipe)
+        for _, result in ipairs(results) do
+            if result.name == recipe_name then
+                return recipe
+            end
+        end
+    end
+    return nil
+end
+
 return util
