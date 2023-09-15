@@ -1,5 +1,4 @@
 require("libs.random.randomlua")
--- local set = require("script.set")
 local lookup = require("static.randomizer-lookup")
 local util = require("static.randomizer-util")
 
@@ -236,7 +235,7 @@ local function calc_prototype(config)
     ---@return table
     function get_type_table(item_lists, fluidCount)
         local temp = {}
-        for index, ttype in ipairs(config.types_table) do
+        for _, ttype in ipairs(config.types_table) do
             if next(item_lists[ttype]) ~= nil then
                 if ttype == "fluid" and fluidCount < 1 then
                     table.insert(temp, ttype)
@@ -319,6 +318,12 @@ local function calc_prototype(config)
         end
         return sum
     end
+
+    local function calc_recipe_cost(recipe_name)
+        local recipe = assert(data.raw.recipe[recipe_name],"recipe does not exist " .. recipe_name )
+        print("hi")        
+    end
+
 
     --- calculated the cost of the recipe it self
     ---@param itemname string
@@ -463,6 +468,7 @@ local function calc_prototype(config)
     local item_set = {}
     for key, tier in pairs(recipes) do
         local recipe = data.raw.recipe[key]
+        local temp = calc_recipe_cost(key)
         add_results(item_set, recipe, tier)
         add_ingredients(item_set, recipe, tier)
     end
