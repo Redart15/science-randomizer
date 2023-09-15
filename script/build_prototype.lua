@@ -38,7 +38,6 @@ local function calc_prototype(config)
     add_item,
     initRecipe,
     calc_crafting_category,
-    calc_costs,
     calc_cost,
     build_results,
     get_count,
@@ -94,9 +93,7 @@ local function calc_prototype(config)
         if effects ~= nil then
             for _, effect in ipairs(effects) do
                 local tier = get_tier(tech.name, ingredients)
-                if lookup.max_tier >= tier then
                     addToDict(accumulator, effect, tier)
-                end
             end
         end
     end
@@ -308,88 +305,46 @@ local function calc_prototype(config)
         return "chemistry"
     end
 
-    --- calculated the cost of the recipe ingredients
-    ---@param ingredients table
-    ---@return unknown
-    function calc_costs(ingredients)
-        local sum = 0
-        for _, item in pairs(ingredients) do
-            sum = sum + item.amount * calc_cost(item.name)
-        end
-        return sum
-    end
-
-    local function calc_recipe_cost(name)
-        local stack = Stack.init()
-        stack.push(recipe_name)
-        while stack.size > 0 do
-            local recipe_name = stack:pop()
-            if recipe_name == nil then
-                error("some message")
-            end
-            local recipe = util.find_recipe(recipe_name)
-            if recipe == nil then
-                return 30
-            end
-            local total_cost = 0
-            local ingredients = util.get_ingredients(recipe)
-            for _, ingredient in ipairs(ingredients) do
-                local ingredient_name = ingredient.name
-                local cost
-                local lookup_table_costs = lookup["costs"][ingredient_name]
-                local local_cost = cost_table[ingredient_name]
-                if lookup_table_costs ~= nil then
-                    cost = lookup_table_costs
-                elseif local_cost ~= nil then
-                    cost = local_cost
-                else
-                    cost = calc_cost(ingredient_name)
-                end
-                total_cost = total_cost + cost * ingredient.amount
-            end
-            local count = get_count(recipe)
-            total_cost = math.ceil(total_cost / count)
-            cost_table[recipe_name] = total_cost
-            return total_cost
-        end
-    end
-
-
-    --- calculated the cost of the recipe it self
-    ---@param itemname string
+     --- calculated the cost of the recipe it self
+    ---@param name string
     ---@return integer
-    function calc_cost(itemname)
-        if itemname:sub(- #"-barrel") == "-barrel" and itemname:sub(1, #"empty") ~= "empty" then
-            itemname = "fill-" .. itemname
+    function calc_cost(name)
+        local recipe = util.find_recipe(name)
+        if recipe == nil then
+            if lookup["costs"][name] then
+                cost_table[name] = lookup["costs"][name]
+                return lookup["costs"][name]
+            end
+            cost_table[name] = 30
+            return 30
         end
-        local recipe = data.raw.recipe[itemname]
         local ingredients = util.get_ingredients(recipe)
         if next(ingredients) == nil then
             return 30
         end
-        local sum = 0
+        local total_cost = 0
         for _, ing in ipairs(ingredients) do
             local cost = set_cost(ing.name)
-            sum = sum + cost * ing.amount
+            if not cost then
+                cost = calc_cost(ing.name)
+            end
+            total_cost = total_cost + cost * ing.amount
         end
-        local count = get_count(recipe)
-        local cost = math.ceil(sum / count)
-        cost_table[itemname] = cost
-        return cost
+        total_cost = math.ceil(total_cost / get_count(recipe))
+        cost_table[name] = total_cost
+        return total_cost
     end
 
     ---@param name string
-    ---@return integer
+    ---@return integer?
     function set_cost(name)
-        local lookup_table_costs = lookup["costs"][name]
-        local local_cost = cost_table[name]
-        if lookup_table_costs ~= nil then
-            return lookup_table_costs
+        if lookup["costs"][name] then
+            return lookup["costs"][name]
         end
-        if local_cost ~= nil then
-            return local_cost
+        if cost_table[name] then
+            return cost_table[name]
         end
-        return calc_cost(name)
+        return nil
     end
 
     --- needed to adjust the recipe cost by the amout it creates
@@ -418,9 +373,12 @@ local function calc_prototype(config)
     ---@return integer
     function calc_result_count(name, ingredients, balance)
         if balance == true then
-            local cost = calc_cost(name)
-            local ingredient_cost = calc_costs(ingredients)
-            return math.ceil(ingredient_cost / cost)
+            local pack_cost = cost_table[name]
+            local ingredients_cost = 0
+            for _, ing in ipairs(ingredients) do
+                ingredients_cost = ingredients_cost + cost_table[ing.name]
+            end
+            return math.ceil(ingredients_cost / pack_cost)
         end
         return 1
     end
@@ -498,7 +456,6 @@ local function calc_prototype(config)
     local item_set = {}
     for key, tier in pairs(recipes) do
         local recipe = data.raw.recipe[key]
-        local temp = calc_recipe_cost(key)
         add_results(item_set, recipe, tier)
         add_ingredients(item_set, recipe, tier)
     end
@@ -509,6 +466,10 @@ local function calc_prototype(config)
             return a.tier < b.tier
         end
     )
+
+    for _, item in ipairs(item_list) do
+        item.cost = calc_cost(item.name)
+    end
 
     local tiered_item_list = {}
 
