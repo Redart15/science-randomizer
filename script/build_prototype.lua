@@ -319,9 +319,39 @@ local function calc_prototype(config)
         return sum
     end
 
-    local function calc_recipe_cost(recipe_name)
-        local recipe = assert(data.raw.recipe[recipe_name],"recipe does not exist " .. recipe_name )
-        print("hi")        
+    local function calc_recipe_cost(name)
+        local stack = Stack.init()
+        stack.push(recipe_name)
+        while stack.size > 0 do
+            local recipe_name = stack:pop()
+            if recipe_name == nil then
+                error("some message")
+            end
+            local recipe = util.find_recipe(recipe_name)
+            if recipe == nil then
+                return 30
+            end
+            local total_cost = 0
+            local ingredients = util.get_ingredients(recipe)
+            for _, ingredient in ipairs(ingredients) do
+                local ingredient_name = ingredient.name
+                local cost
+                local lookup_table_costs = lookup["costs"][ingredient_name]
+                local local_cost = cost_table[ingredient_name]
+                if lookup_table_costs ~= nil then
+                    cost = lookup_table_costs
+                elseif local_cost ~= nil then
+                    cost = local_cost
+                else
+                    cost = calc_cost(ingredient_name)
+                end
+                total_cost = total_cost + cost * ingredient.amount
+            end
+            local count = get_count(recipe)
+            total_cost = math.ceil(total_cost / count)
+            cost_table[recipe_name] = total_cost
+            return total_cost
+        end
     end
 
 
