@@ -15,14 +15,13 @@ local function calc_prototype(config)
 
     local fluidMuliplier = 20
     local cost_table = {}
+
     -- forward function declaration
     -- techs2Recipes
     local add_tiered_recipe,
-    unlocks_effects,
     filter_recipe,
     get_tier,
-    research_packs,
-    is_enabled
+    research_packs
 
     -- recipes2Items
     local add_ingredients,
@@ -42,7 +41,6 @@ local function calc_prototype(config)
     build_results,
     get_count,
     calc_result_count,
-    set_cost,
     populate_ingredients,
     populate_Item,
     dictToList,
@@ -88,27 +86,14 @@ local function calc_prototype(config)
     ---@param tech table
     function add_tiered_recipe(accumulator, tech)
         local ingredients = research_packs(tech.unit.ingredients)
-        local effects = unlocks_effects(tech)
+        local effects = util.unlocks_effects(tech)
         effects = filter_recipe(effects)
         if effects ~= nil then
             for _, effect in ipairs(effects) do
                 local tier = get_tier(tech.name, ingredients)
-                    addToDict(accumulator, effect, tier)
+                addToDict(accumulator, effect, tier)
             end
         end
-    end
-
-    --- effects can shuffled in normal if normal is defined
-    ---@param tech table
-    ---@return table
-    function unlocks_effects(tech)
-        if tech == nil then
-            return {}
-        end
-        if tech.effects then
-            return tech.effects
-        end
-        return unlocks_effects(tech.normal)
     end
 
     ---@param effects table
@@ -161,22 +146,6 @@ local function calc_prototype(config)
             end
         end
         return temp
-    end
-
-    --- recipes enablebility can be shuffled in normal if defined
-    ---@param recipe table
-    ---@return boolean
-    function is_enabled(recipe)
-        if not recipe then
-            return false
-        end
-        if recipe.normal then
-            return is_enabled(recipe.normal)
-        end
-        if recipe.expensive then
-            return is_enabled(recipe.expensive)
-        end
-        return recipe.enabled == true or recipe.enabled == nil
     end
 
     --- collects item that are results from recipes
@@ -305,46 +274,37 @@ local function calc_prototype(config)
         return "chemistry"
     end
 
-     --- calculated the cost of the recipe it self
+    --- calculated the cost of the recipe it self
     ---@param name string
     ---@return integer
     function calc_cost(name)
-        local recipe = util.find_recipe(name)
-        if recipe == nil then
-            if lookup["costs"][name] then
-                cost_table[name] = lookup["costs"][name]
-                return lookup["costs"][name]
-            end
-            cost_table[name] = 30
-            return 30
-        end
-        local ingredients = util.get_ingredients(recipe)
-        if next(ingredients) == nil then
-            return 30
-        end
-        local total_cost = 0
-        for _, ing in ipairs(ingredients) do
-            local cost = set_cost(ing.name)
-            if not cost then
-                cost = calc_cost(ing.name)
-            end
-            total_cost = total_cost + cost * ing.amount
-        end
-        total_cost = math.ceil(total_cost / get_count(recipe))
-        cost_table[name] = total_cost
-        return total_cost
-    end
-
-    ---@param name string
-    ---@return integer?
-    function set_cost(name)
-        if lookup["costs"][name] then
-            return lookup["costs"][name]
-        end
         if cost_table[name] then
             return cost_table[name]
         end
-        return nil
+
+        local recipe = util.find_recipe(name)
+        if not recipe then
+            return 50
+        end
+
+        local current_cost = 0
+        local hasWoodIngredient = false  -- Flag to check if there's a wood ingredient
+
+
+        for _, ing in ipairs(util.get_ingredients(recipe)) do
+            local cost = calc_cost(ing.name)
+            current_cost = current_cost + cost * ing.amount
+            if  lookup:isGrown(ing.name) then
+                hasWoodIngredient = true
+            end
+        end
+
+        local total_cost = math.ceil(current_cost / get_count(recipe))
+        cost_table[name] = total_cost
+        if hasWoodIngredient then
+            lookup.grown[name] = true
+        end
+        return total_cost   
     end
 
     --- needed to adjust the recipe cost by the amout it creates
@@ -444,7 +404,7 @@ local function calc_prototype(config)
     end
 
     for _, recipe in pairs(data.raw.recipe) do
-        if is_enabled(recipe) then
+        if util.is_enabled(recipe) then
             local tier = 1
             if lookup:isScience(recipe.name) then
                 tier = 2
@@ -466,6 +426,10 @@ local function calc_prototype(config)
             return a.tier < b.tier
         end
     )
+
+    for name, cost in pairs(lookup.costs) do
+        cost_table[name] = cost
+    end
 
     for _, item in ipairs(item_list) do
         item.cost = calc_cost(item.name)

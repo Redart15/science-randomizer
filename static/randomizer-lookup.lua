@@ -1,8 +1,15 @@
 local lookup_table = {}
 
-local isFluid, isRaw, isGrown, isScience, check
+local isFluid, isRaw, isGrown, isScience, icheck, check
 
 function check(input, lookup)
+    if input == nil or not lookup[input] then
+        return false
+    end
+    return true
+end
+
+function icheck(input, lookup)
     if input == nil or lookup == nil then
         return false
     end
@@ -32,11 +39,11 @@ function lookup_table:get_type(item)
 end
 
 function lookup_table:isFluid(input)
-    return check(input, self.fluid)
+    return icheck(input, self.fluid)
 end
 
 function lookup_table:isRaw(input)
-    return check(input, self.raw)
+    return icheck(input, self.raw)
 end
 
 function lookup_table:isGrown(input)
@@ -44,15 +51,7 @@ function lookup_table:isGrown(input)
 end
 
 function lookup_table:isScience(input)
-    if input == nil or self.science == nil then
-        return false
-    end
-    for key, value in pairs(self.science) do
-        if input == key then
-            return true
-        end
-    end
-    return false
+    return check(input, self.science)
 end
 
 function lookup_table:tier_name(input)
@@ -65,17 +64,6 @@ function lookup_table:tier_name(input)
         end
     end
     return ""
-end
-
-function lookup_table:science2NameTable()
-    local temp = {}
-    for i = 1, 6 do
-        for key, value in pairs(self["science"]) do
-            if i == value then
-                table.insert(temp, key)
-            end
-        end
-    end
 end
 
 lookup_table["science"] = {
@@ -98,12 +86,8 @@ lookup_table["raw"] = {
 }
 
 lookup_table["grown"] = {
-    "raw-fish",
-    "wood",
-    "wooden-chest",
-    "combat-shotgun",
-    "shotgun",
-    "small-electric-pole",
+    ["raw-fish"] = true,
+    ["wood"] = true,
 }
 
 lookup_table["fluid"] = {
