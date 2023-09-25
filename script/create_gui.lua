@@ -74,7 +74,7 @@ local function createFootbar(gui)
         type = "button",
         name = "science_randomizer_confirm",
         caption = { "science_randomizer.confirm" },
-        tooltip = { "gui.close-instruction" }
+        -- tooltip = { "gui.close-instruction" }
     }
 end
 
