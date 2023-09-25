@@ -73,7 +73,8 @@ local function createFootbar(gui)
     buttom_flow.add {
         type = "button",
         name = "science_randomizer_confirm",
-        caption = { "science_randomizer.confirm" }
+        caption = { "science_randomizer.confirm" },
+        tooltip = { "gui.close-instruction" }
     }
 end
 
