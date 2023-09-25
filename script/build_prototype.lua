@@ -288,13 +288,13 @@ local function calc_prototype(config)
         end
 
         local current_cost = 0
-        local hasWoodIngredient = false  -- Flag to check if there's a wood ingredient
+        local hasWoodIngredient = false -- Flag to check if there's a wood ingredient
 
 
         for _, ing in ipairs(util.get_ingredients(recipe)) do
             local cost = calc_cost(ing.name)
             current_cost = current_cost + cost * ing.amount
-            if  lookup:isGrown(ing.name) then
+            if lookup:isGrown(ing.name) then
                 hasWoodIngredient = true
             end
         end
@@ -304,7 +304,7 @@ local function calc_prototype(config)
         if hasWoodIngredient then
             lookup.grown[name] = true
         end
-        return total_cost   
+        return total_cost
     end
 
     --- needed to adjust the recipe cost by the amout it creates
@@ -336,7 +336,7 @@ local function calc_prototype(config)
             local pack_cost = cost_table[name]
             local ingredients_cost = 0
             for _, ing in ipairs(ingredients) do
-                ingredients_cost = ingredients_cost + cost_table[ing.name]
+                ingredients_cost = ingredients_cost + cost_table[ing.name] * ing.amount
             end
             return math.ceil(ingredients_cost / pack_cost)
         end
