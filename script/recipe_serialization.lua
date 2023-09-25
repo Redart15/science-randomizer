@@ -2,7 +2,7 @@ local io_prototype = {}
 local util = require("static.randomizer-util")
 local lookup = require("static.randomizer-lookup")
 
-function io_prototype.recipe_derialization(input)
+function io_prototype.recipes_derialization(input)
     local divup_attributes,
     divup_items,
     det_crafting_category,
@@ -165,7 +165,7 @@ function io_prototype.recipe_derialization(input)
 end
 
 -- ============================================================================================================
-function io_prototype.recipe_serialization(recipes)
+function io_prototype.recipes_serialization(recipes)
     local recipe2String,
     items2String
 
