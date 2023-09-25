@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 25.09.2023
+  Minor Features:
+    - improved the gui for exporting
+  Bugfixes:
+    - properly classify items that use wood or fish in any part of a given recipe chain as grown
+---------------------------------------------------------------------------------------------------
 Version: 1.0.0
 Date: 10.09.2023
   Major Features:
