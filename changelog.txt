@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+Date: 25.09.2023
+  Bugfixes:
+    - intro cinematic is now reenabled
+    - hidden recipes results can no longer be used as ingredients for science-recipes
+    - prevents fluid from beeing use in the recipe when creating automation and logic science packs
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 25.09.2023
   Minor Features:
