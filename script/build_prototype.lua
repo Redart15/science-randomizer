@@ -404,12 +404,14 @@ local function calc_prototype(config)
     end
 
     for _, recipe in pairs(data.raw.recipe) do
-        if util.is_enabled(recipe) then
-            local tier = 1
-            if lookup:isScience(recipe.name) then
-                tier = 2
+        if recipe.hidden == nil or recipe.hidden == false then
+            if util.is_enabled(recipe) then
+                local tier = 1
+                if lookup:isScience(recipe.name) then
+                    tier = 2
+                end
+                addToDict(recipes, recipe.name, tier)
             end
-            addToDict(recipes, recipe.name, tier)
         end
     end
 
