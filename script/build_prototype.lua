@@ -232,11 +232,11 @@ local function calc_prototype(config)
     ---@param type_table table
     ---@param generate table
     ---@return boolean
-    function add_item(current_pack, item_list, type_table, generate)
+    function add_item(current_pack, item_list, type_table, generate, tier)
         local table_index = generate:random(1, #type_table)
         for k = 1, #type_table do
             local ttype = type_table[table_index]
-            if (ttype == "fluid" and current_pack.fluidCount < 2) or ttype ~= "fluid" then
+            if (ttype == "fluid" and current_pack.fluidCount < 2 and tier > 2) or ttype ~= "fluid" then
                 local item_index = generate:random(1, #item_list[ttype])
                 for i = 1, #item_list[ttype] do
                     local item = table.deepcopy(item_list[ttype][item_index])
@@ -370,7 +370,7 @@ local function calc_prototype(config)
             local current_tier = generate:random(min_tier, max_tier)
             local item_lists = tier_list[current_tier].items
             local type_table = get_type_table(item_lists, accumulator.fluidCount)
-            if not add_item(accumulator, item_lists, type_table, generate) then
+            if not add_item(accumulator, item_lists, type_table, generate, tier) then
                 ingredientCount = (ingredientCount >= 0) and (ingredientCount - 1) or 0
             end
             currentIngredientCount = currentIngredientCount + 1
